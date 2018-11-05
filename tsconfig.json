@@ -16,6 +16,14 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "ng-ability": [
+        "dist/ng-ability"
+      ],
+      "ng-ability/*": [
+        "dist/ng-ability/*"
+      ]
+    }
   }
 }

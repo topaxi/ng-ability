@@ -1,4 +1,5 @@
 import { Component } from '@angular/core';
+import { NgAbilityService } from 'ng-ability';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +8,10 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'ng-ability-app';
+
+  constructor(private readonly ability: NgAbilityService) {}
+
+  ngOnInit() {
+    console.log(this.ability.can('edit', 'User'));
+  }
 }

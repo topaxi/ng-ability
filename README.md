@@ -1,6 +1,122 @@
 # NgAbilityApp
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 7.0.4.
+Define access control lists in Angular.
+
+## Usage
+
+Define ability context, for example using the current user:
+
+```typescript
+import { Injectable } from '@angular/core';
+import { AbilityContext } from 'ng-ability';
+
+@Injectable({ providedIn: 'root' })
+export class AbilityUserContext {
+  constructor(private readonly auth: AuthService) {}
+
+  getAbilityContext(): User | null {
+    return this.auth.getCurrentUser();
+  }
+}
+```
+
+Define abilities for pages, models and other data:
+
+```typescript
+import { AbilityFor, Ability } from 'ng-ability';
+
+// Define ability for Article instance objects, the string 'Article'
+// and graphql like objects using a matching function
+@AbilityFor(Article, 'Article', article => article.__typename === 'Article')
+export class ArticleAbility implements Ability<User, Article> {
+  can(currentUser: User | null, action: string, article: Article) {
+    if (currentUser != null && currentUser.admin) {
+      // Admins can do anything
+      return true;
+    }
+
+    switch (action) {
+      case 'view': // Everyone can view articles
+        return true;
+      case 'create': // Every user can create new articles
+        return currentUser != null;
+      case 'edit': // Users can only edit their own articles
+        return currentUser != null && currentUser.id === article.authorId;
+      default:
+        return false;
+    }
+  }
+}
+
+@AbilityFor('AdminArea')
+export class AdminAreaAbility implements Ability<User> {
+  can(currentUser: User | null, action: string) {
+    switch (action) {
+      case 'view': // Only admins can view the admin area
+        return currentUser != null && currentUser.admin;
+      default:
+        return false;
+    }
+  }
+}
+```
+
+Import the NgAbilityModule into your application:
+
+```typescript
+import { NgModule } from '@angular/core';
+import { NgAbilityModule } from 'ng-ability';
+import { AbilityUserContext } from './ability-user-context';
+import { ArticleAbility } from './abilities/article.ability';
+import { AdminAreaAbility } from './abilities/admin-area.ability';
+
+@NgModule({
+  imports: [
+    NgAbilityModule.withAbilities(AbilityUserContext, [
+      ArticleAbility,
+      AdminAreaAbility
+    ])
+  ]
+})
+export class AppModule {}
+```
+
+Check for abilities in your application and template code:
+
+```typescript
+import { Component } from '@angular/core';
+import { NgAbilityService } from 'ng-ability';
+
+@Component({
+  template: `
+    <div *can="['create', 'Article']">
+      I can create new articles!
+    </div>
+    <div *can="['edit', latestArticle]; else noteditable">
+      <button (click)="editArticle(latestArticle)">Edit latest article</button>
+    </div>
+    <ng-template #noteditable>
+      <div>Latest article is not editable :(</div>
+    </ng-template>
+  `
+})
+export class AppComponent {
+  get latestArticle(): Article {
+    return this.articleService.getLatestArticle();
+  }
+
+  constructor(
+    private readonly ability: NgAbilityService,
+    private readonly articleService: ArticleService
+  ) {}
+
+  editArticle(article: Article) {
+    if (this.ability.can('edit', article)) {
+      // edit article...
+    }
+  }
+}
+```
 
 ## Development server
 
