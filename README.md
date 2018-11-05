@@ -2,6 +2,14 @@
 
 Define access control lists in Angular.
 
+## Installation
+
+```bash
+$ npm install --save ng-ability
+# or
+$ yarn add ng-ability
+```
+
 ## Usage
 
 Define ability context, for example using the current user:
