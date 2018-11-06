@@ -32,7 +32,7 @@ export class NgAbilityService {
     return Boolean(this.getAbility(matcher).can(this.context, action, thing));
   }
 
-  private getAbility(thing: any) {
+  private getAbility(thing: any): Ability<any, any> {
     return (
       this.abilities.find(ability => {
         const matchers: AbilityMatcher<any>[] = Reflect.getMetadata(
@@ -45,26 +45,32 @@ export class NgAbilityService {
           return false;
         }
 
-        return matchers.some(matcher => {
-          if (typeof matcher === 'string' && matcher === thing) {
-            return true;
-          }
-
-          if (typeof matcher === 'function') {
-            if (thing instanceof matcher) {
-              return true;
-            }
-
-            try {
-              return (matcher as any)(thing) === true;
-            } catch (e) {
-              return false;
-            }
-          }
-
-          return false;
-        });
+        return matchers.some(matcher => this.matchAbility(matcher, thing));
       }) || inability
     );
+  }
+
+  private matchAbility(matcher: AbilityMatcher<any>, thing: any): boolean {
+    if (typeof matcher === 'string' && matcher === thing) {
+      return true;
+    }
+
+    if (typeof matcher === 'function') {
+      if (thing instanceof matcher) {
+        return true;
+      }
+
+      if (matcher === thing) {
+        return true;
+      }
+
+      try {
+        return (matcher as any)(thing) === true;
+      } catch (e) {
+        return false;
+      }
+    }
+
+    return false;
   }
 }
