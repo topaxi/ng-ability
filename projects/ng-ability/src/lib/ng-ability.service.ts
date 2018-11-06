@@ -51,16 +51,12 @@ export class NgAbilityService {
   }
 
   private matchAbility(matcher: AbilityMatcher<any>, thing: any): boolean {
-    if (typeof matcher === 'string' && matcher === thing) {
+    if (matcher === thing) {
       return true;
     }
 
     if (typeof matcher === 'function') {
       if (thing instanceof matcher) {
-        return true;
-      }
-
-      if (matcher === thing) {
         return true;
       }
 
