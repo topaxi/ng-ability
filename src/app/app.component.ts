@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgAbilityService } from 'ng-ability';
 
 @Component({
@@ -6,7 +6,7 @@ import { NgAbilityService } from 'ng-ability';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'ng-ability-app';
 
   constructor(private readonly ability: NgAbilityService) {}
