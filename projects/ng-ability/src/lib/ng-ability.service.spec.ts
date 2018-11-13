@@ -44,6 +44,12 @@ describe('NgAbilityService', () => {
       service.can('create', 'Dummy');
       expect(dummyAbility.can).toHaveBeenCalledWith(null, 'create', 'Dummy');
     });
+
+    it('should be able to override value', () => {
+      const service: NgAbilityService = TestBed.get(NgAbilityService);
+      service.can('create', 'Dummy', 'value');
+      expect(dummyAbility.can).toHaveBeenCalledWith(null, 'create', 'value');
+    });
   });
 
   describe('with context', () => {
@@ -72,6 +78,16 @@ describe('NgAbilityService', () => {
         context,
         'create',
         'Dummy'
+      );
+    });
+
+    it('should be able to override value', () => {
+      const service: NgAbilityService = TestBed.get(NgAbilityService);
+      service.can('create', 'Dummy', 'value');
+      expect(dummyAbility.can).toHaveBeenCalledWith(
+        context,
+        'create',
+        'value'
       );
     });
   });
