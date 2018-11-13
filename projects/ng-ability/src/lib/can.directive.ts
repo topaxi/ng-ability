@@ -3,11 +3,11 @@ import {
   Input,
   DoCheck,
   TemplateRef,
-  ViewContainerRef
+  ViewContainerRef,
+  EmbeddedViewRef
 } from '@angular/core';
 import { AbilityMatcher } from './interfaces';
 import { NgAbilityService } from './ng-ability.service';
-import { EmbeddedViewRef } from '@angular/core/src/linker/view_ref';
 
 @Directive({
   selector: '[can]' // tslint:disable-line
