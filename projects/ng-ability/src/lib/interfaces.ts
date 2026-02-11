@@ -13,6 +13,10 @@ export interface AbilityActionsOf<K extends keyof AbilityActions> {
 
 export type Action = AbilityActions[keyof AbilityActions] | (string & {});
 
+export type ActionFor<M> = M extends keyof AbilityActions
+  ? AbilityActions[M]
+  : Action;
+
 export interface Ability<S, O = never> {
   can(subj: S | null, action: Action, obj?: O): boolean;
 }

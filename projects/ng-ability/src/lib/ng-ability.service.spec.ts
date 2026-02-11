@@ -2,12 +2,27 @@ import { signal, WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { AbilityFor } from './ability';
-import { Ability, AbilityMatcher } from './interfaces';
+import type {
+  Ability,
+  AbilityActions,
+  AbilityActionsOf,
+  AbilityMatcher,
+  Action,
+  ActionFor,
+} from './interfaces';
 import {
   NgAbilityService,
   ABILITY,
   ABILITY_CONTEXT,
 } from './ng-ability.service';
+
+declare module './interfaces' {
+  interface AbilityActions {
+    Post: 'read' | 'write' | 'delete';
+    Comment: 'read' | 'moderate';
+    Settings: 'view';
+  }
+}
 
 describe('NgAbilityService', () => {
   function ability<T>(...matchers: AbilityMatcher<T>[]): Ability<any, T> {
@@ -77,21 +92,13 @@ describe('NgAbilityService', () => {
     it('should call ability with provided context', () => {
       const service: NgAbilityService = TestBed.inject(NgAbilityService);
       service.can('Dummy', 'create');
-      expect(dummyAbility.can).toHaveBeenCalledWith(
-        context,
-        'create',
-        'Dummy'
-      );
+      expect(dummyAbility.can).toHaveBeenCalledWith(context, 'create', 'Dummy');
     });
 
     it('should be able to override value', () => {
       const service: NgAbilityService = TestBed.inject(NgAbilityService);
       service.can('Dummy', 'create', 'value');
-      expect(dummyAbility.can).toHaveBeenCalledWith(
-        context,
-        'create',
-        'value'
-      );
+      expect(dummyAbility.can).toHaveBeenCalledWith(context, 'create', 'value');
     });
 
     it('should pass updated context when abilityContext signal changes', () => {
@@ -130,7 +137,7 @@ describe('NgAbilityService', () => {
     beforeEach(() => {
       stringAbility = ability('MyString');
       typeAbility = ability(Model);
-      fnAbility = ability(obj => obj.__typename === 'MyObject');
+      fnAbility = ability((obj) => obj.__typename === 'MyObject');
       mixedFnMatcher = vi.fn((obj: any) => obj.__typename === 'Mixed');
       mixedAbility = ability('Mixed', Mixed, mixedFnMatcher);
 
@@ -150,7 +157,7 @@ describe('NgAbilityService', () => {
       expect(stringAbility.can).toHaveBeenCalledWith(
         null,
         'create',
-        'MyString'
+        'MyString',
       );
       expect(typeAbility.can).not.toHaveBeenCalled();
       expect(fnAbility.can).not.toHaveBeenCalled();
@@ -218,6 +225,212 @@ describe('NgAbilityService', () => {
       expect(fnAbility.can).not.toHaveBeenCalled();
       expect(mixedAbility.can).toHaveBeenCalledWith(null, 'create', obj);
       expect(mixedFnMatcher).toHaveBeenCalledWith(obj);
+    });
+  });
+});
+
+describe('NgAbilityService type tests', () => {
+  describe('AbilityActions declaration merging', () => {
+    it('should include merged matcher keys', () => {
+      expectTypeOf<'Post' | 'Comment' | 'Settings'>().toMatchTypeOf<
+        keyof AbilityActions
+      >();
+    });
+
+    it('should map matcher to its declared actions', () => {
+      expectTypeOf<AbilityActions['Post']>().toEqualTypeOf<
+        'read' | 'write' | 'delete'
+      >();
+      expectTypeOf<AbilityActions['Comment']>().toEqualTypeOf<
+        'read' | 'moderate'
+      >();
+      expectTypeOf<AbilityActions['Settings']>().toEqualTypeOf<'view'>();
+    });
+
+    it('should include all declared actions in the Action type', () => {
+      expectTypeOf<'read'>().toExtend<Action>();
+      expectTypeOf<'write'>().toExtend<Action>();
+      expectTypeOf<'delete'>().toExtend<Action>();
+      expectTypeOf<'moderate'>().toExtend<Action>();
+      expectTypeOf<'view'>().toExtend<Action>();
+    });
+
+    it('should still accept arbitrary strings as Action', () => {
+      expectTypeOf<'custom-action'>().toExtend<Action>();
+      expectTypeOf<'any-string'>().toExtend<Action>();
+    });
+  });
+
+  describe('ActionFor conditional type', () => {
+    it('should narrow ActionFor for known matchers', () => {
+      expectTypeOf<ActionFor<'Post'>>().toEqualTypeOf<
+        'read' | 'write' | 'delete'
+      >();
+      expectTypeOf<ActionFor<'Comment'>>().toEqualTypeOf<'read' | 'moderate'>();
+      expectTypeOf<ActionFor<'Settings'>>().toEqualTypeOf<'view'>();
+    });
+
+    it('should return Action for unknown matchers', () => {
+      expectTypeOf<ActionFor<'Unknown'>>().toEqualTypeOf<Action>();
+      expectTypeOf<ActionFor<'AnyOther'>>().toEqualTypeOf<Action>();
+    });
+
+    it('should return Action for non-string types', () => {
+      expectTypeOf<ActionFor<object>>().toEqualTypeOf<Action>();
+      expectTypeOf<ActionFor<number>>().toEqualTypeOf<Action>();
+    });
+  });
+
+  describe('can() method overloads', () => {
+    it('should accept registered string matchers with their declared actions', () => {
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith('Post', 'read');
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith('Post', 'write');
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        'Post',
+        'delete',
+      );
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        'Comment',
+        'read',
+      );
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        'Comment',
+        'moderate',
+      );
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        'Settings',
+        'view',
+      );
+    });
+
+    it('should accept registered matchers with optional thing parameter', () => {
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith('Post', 'read', {
+        id: 1,
+      });
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        'Comment',
+        'moderate',
+        null,
+      );
+    });
+
+    it('should accept unregistered string matchers with any action', () => {
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        'Unknown',
+        'anything',
+      );
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        'Custom',
+        'custom-action',
+      );
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        'AnyMatcher',
+        'any-action',
+      );
+    });
+
+    it('should accept class-based matchers with any action', () => {
+      class UserModel {}
+      class DocumentModel {}
+
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        UserModel,
+        'create',
+        new UserModel(),
+      );
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        DocumentModel,
+        'archive',
+        new DocumentModel(),
+      );
+    });
+
+    it('should accept class-based matchers without thing parameter', () => {
+      class GenericModel {}
+
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        GenericModel,
+        'list',
+      );
+    });
+
+    it('should narrow actions for class-based matchers using AbilityActionsOf', () => {
+      class PostModel implements AbilityActionsOf<'Post'> {}
+      class CommentModel implements AbilityActionsOf<'Comment'> {}
+
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        PostModel,
+        'read',
+      );
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        PostModel,
+        'write',
+      );
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        PostModel,
+        'delete',
+      );
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        CommentModel,
+        'read',
+      );
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        CommentModel,
+        'moderate',
+      );
+    });
+
+    it('should accept AbilityActionsOf classes with thing parameter', () => {
+      class PostModel implements AbilityActionsOf<'Post'> {}
+
+      expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+        PostModel,
+        'read',
+        new PostModel(),
+      );
+    });
+
+    it('should return boolean from can()', () => {
+      expectTypeOf<NgAbilityService['can']>().returns.toEqualTypeOf<boolean>();
+    });
+  });
+
+  describe('AbilityActionsOf marker interface', () => {
+    it('should allow implementing AbilityActionsOf for registered matchers', () => {
+      class PostEntity implements AbilityActionsOf<'Post'> {}
+      class CommentEntity implements AbilityActionsOf<'Comment'> {}
+
+      expectTypeOf<PostEntity>().toMatchTypeOf<AbilityActionsOf<'Post'>>();
+      expectTypeOf<CommentEntity>().toMatchTypeOf<
+        AbilityActionsOf<'Comment'>
+      >();
+    });
+
+    it('should preserve the branded key type', () => {
+      type PostKey =
+        AbilityActionsOf<'Post'> extends { readonly [K in infer Key]?: 'Post' }
+          ? Key
+          : never;
+      expectTypeOf<PostKey>().toBeSymbol();
+    });
+  });
+
+  describe('AbilityMatcher type', () => {
+    it('should accept string matchers', () => {
+      expectTypeOf<'Post'>().toMatchTypeOf<AbilityMatcher<unknown>>();
+      expectTypeOf<'Custom'>().toMatchTypeOf<AbilityMatcher<unknown>>();
+    });
+
+    it('should accept class constructors', () => {
+      class Model {}
+      expectTypeOf<typeof Model>().toMatchTypeOf<AbilityMatcher<Model>>();
+    });
+
+    it('should accept predicate functions', () => {
+      const predicate = (obj: { type: string }) => obj.type === 'post';
+      expectTypeOf<typeof predicate>().toMatchTypeOf<
+        AbilityMatcher<{ type: string }>
+      >();
     });
   });
 });

@@ -1,5 +1,6 @@
-import type { AbilityActions, AbilityActionsOf, Action } from './interfaces';
+import type { AbilityActions, AbilityActionsOf, Action, ActionFor } from './interfaces';
 import type { NgAbilityService } from './ng-ability.service';
+import type { CanPipe } from './can.pipe';
 
 declare module './interfaces' {
   interface AbilityActions {
@@ -10,8 +11,8 @@ declare module './interfaces' {
 
 describe('AbilityActions declaration merging', () => {
   it('should include merged matcher keys', () => {
-    expectTypeOf<keyof AbilityActions>().toEqualTypeOf<
-      'Article' | 'AdminArea'
+    expectTypeOf<'Article' | 'AdminArea'>().toMatchTypeOf<
+      keyof AbilityActions
     >();
   });
 
@@ -31,6 +32,15 @@ describe('AbilityActions declaration merging', () => {
   it('should still accept arbitrary strings as Action', () => {
     expectTypeOf<'arbitrary'>().toExtend<Action>();
   });
+
+  it('should narrow ActionFor for known matchers', () => {
+    expectTypeOf<ActionFor<'Article'>>().toEqualTypeOf<'view' | 'create' | 'edit'>();
+    expectTypeOf<ActionFor<'AdminArea'>>().toEqualTypeOf<'view'>();
+  });
+
+  it('should return Action for unknown matchers', () => {
+    expectTypeOf<ActionFor<'Unknown'>>().toEqualTypeOf<Action>();
+  });
 });
 
 describe('NgAbilityService.can() type overloads', () => {
@@ -43,13 +53,6 @@ describe('NgAbilityService.can() type overloads', () => {
     expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
       'AdminArea',
       'view',
-    );
-  });
-
-  it('should accept registered matcher with arbitrary action strings', () => {
-    expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
-      'Article',
-      'arbitrary',
     );
   });
 
@@ -85,9 +88,43 @@ describe('NgAbilityService.can() type overloads', () => {
       ArticleModel,
       'edit',
     );
-    expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
-      ArticleModel,
-      'arbitrary',
+
+  });
+});
+
+describe('CanPipe.transform() type overloads', () => {
+  it('should accept registered matcher with its declared actions', () => {
+    expectTypeOf<CanPipe['transform']>().toBeCallableWith('Article', 'view');
+    expectTypeOf<CanPipe['transform']>().toBeCallableWith('Article', 'create');
+    expectTypeOf<CanPipe['transform']>().toBeCallableWith('AdminArea', 'view');
+  });
+
+  it('should accept unregistered matcher with any action', () => {
+    expectTypeOf<CanPipe['transform']>().toBeCallableWith(
+      'Unknown',
+      'anything',
     );
+  });
+
+  it('should accept class-based matchers', () => {
+    class Model {}
+
+    expectTypeOf<CanPipe['transform']>().toBeCallableWith(
+      Model,
+      'edit',
+      new Model(),
+    );
+  });
+
+  it('should narrow actions for class-based matchers using AbilityActionsOf', () => {
+    class ArticleModel implements AbilityActionsOf<'Article'> {}
+
+    expectTypeOf<CanPipe['transform']>().toBeCallableWith(ArticleModel, 'view');
+    expectTypeOf<CanPipe['transform']>().toBeCallableWith(
+      ArticleModel,
+      'create',
+    );
+    expectTypeOf<CanPipe['transform']>().toBeCallableWith(ArticleModel, 'edit');
+
   });
 });

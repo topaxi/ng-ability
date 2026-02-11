@@ -7,16 +7,33 @@ import {
   TemplateRef,
   ViewContainerRef,
 } from '@angular/core';
-import type { AbilityMatcher, Action } from './interfaces';
+import type {
+  AbilityActions,
+  AbilityActionsOf,
+  AbilityMatcher,
+  ActionFor,
+} from './interfaces';
 import { NgAbilityService } from './ng-ability.service';
+
+type CanDirectiveInput<M = unknown> =
+  | {
+      [K in keyof AbilityActions]: [K, AbilityActions[K]];
+    }[keyof AbilityActions]
+  | {
+      [K in keyof AbilityActions]: [
+        new (...args: never[]) => AbilityActionsOf<K>,
+        AbilityActions[K],
+        unknown?,
+      ];
+    }[keyof AbilityActions]
+  | [M, ActionFor<M>]
+  | [AbilityMatcher<unknown>, ActionFor<M>, unknown?];
 
 @Directive({
   selector: '[can]',
 })
 export class CanDirective {
-  readonly can = input<
-    [unknown, Action] | [AbilityMatcher<unknown>, Action, unknown?]
-  >();
+  readonly can = input<CanDirectiveInput>();
 
   readonly canElse = input<TemplateRef<void> | null>(null);
 
