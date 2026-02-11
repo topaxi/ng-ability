@@ -1,4 +1,9 @@
-import type { AbilityActions, AbilityActionsOf, Action, ActionFor } from './interfaces';
+import type {
+  AbilityActions,
+  AbilityActionsOf,
+  AbilityAction,
+  ActionFor,
+} from './interfaces';
 import type { NgAbilityService } from './ng-ability.service';
 import type { CanPipe } from './can.pipe';
 
@@ -24,22 +29,24 @@ describe('AbilityActions declaration merging', () => {
   });
 
   it('should include all declared actions in the Action type', () => {
-    expectTypeOf<'view'>().toExtend<Action>();
-    expectTypeOf<'create'>().toExtend<Action>();
-    expectTypeOf<'edit'>().toExtend<Action>();
+    expectTypeOf<'view'>().toExtend<AbilityAction>();
+    expectTypeOf<'create'>().toExtend<AbilityAction>();
+    expectTypeOf<'edit'>().toExtend<AbilityAction>();
   });
 
   it('should still accept arbitrary strings as Action', () => {
-    expectTypeOf<'arbitrary'>().toExtend<Action>();
+    expectTypeOf<'arbitrary'>().toExtend<AbilityAction>();
   });
 
   it('should narrow ActionFor for known matchers', () => {
-    expectTypeOf<ActionFor<'Article'>>().toEqualTypeOf<'view' | 'create' | 'edit'>();
+    expectTypeOf<ActionFor<'Article'>>().toEqualTypeOf<
+      'view' | 'create' | 'edit'
+    >();
     expectTypeOf<ActionFor<'AdminArea'>>().toEqualTypeOf<'view'>();
   });
 
   it('should return Action for unknown matchers', () => {
-    expectTypeOf<ActionFor<'Unknown'>>().toEqualTypeOf<Action>();
+    expectTypeOf<ActionFor<'Unknown'>>().toEqualTypeOf<AbilityAction>();
   });
 });
 
@@ -88,7 +95,6 @@ describe('NgAbilityService.can() type overloads', () => {
       ArticleModel,
       'edit',
     );
-
   });
 });
 
@@ -125,6 +131,5 @@ describe('CanPipe.transform() type overloads', () => {
       'create',
     );
     expectTypeOf<CanPipe['transform']>().toBeCallableWith(ArticleModel, 'edit');
-
   });
 });

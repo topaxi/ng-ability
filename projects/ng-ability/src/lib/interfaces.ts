@@ -11,14 +11,16 @@ export interface AbilityActionsOf<K extends keyof AbilityActions> {
   readonly [abilityActionsKey]?: K;
 }
 
-export type Action = AbilityActions[keyof AbilityActions] | (string & {});
+export type AbilityAction =
+  | AbilityActions[keyof AbilityActions]
+  | (string & {});
 
 export type ActionFor<M> = M extends keyof AbilityActions
   ? AbilityActions[M]
-  : Action;
+  : AbilityAction;
 
 export interface Ability<S, O = never> {
-  can(subj: S | null, action: Action, obj?: O): boolean;
+  can(subj: S | null, action: AbilityAction, obj?: O): boolean;
 }
 
 export interface AbilityContext<S> {

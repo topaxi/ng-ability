@@ -7,7 +7,7 @@ import type {
   AbilityActions,
   AbilityActionsOf,
   AbilityMatcher,
-  Action,
+  AbilityAction,
   ActionFor,
 } from './interfaces';
 import {
@@ -248,16 +248,16 @@ describe('NgAbilityService type tests', () => {
     });
 
     it('should include all declared actions in the Action type', () => {
-      expectTypeOf<'read'>().toExtend<Action>();
-      expectTypeOf<'write'>().toExtend<Action>();
-      expectTypeOf<'delete'>().toExtend<Action>();
-      expectTypeOf<'moderate'>().toExtend<Action>();
-      expectTypeOf<'view'>().toExtend<Action>();
+      expectTypeOf<'read'>().toExtend<AbilityAction>();
+      expectTypeOf<'write'>().toExtend<AbilityAction>();
+      expectTypeOf<'delete'>().toExtend<AbilityAction>();
+      expectTypeOf<'moderate'>().toExtend<AbilityAction>();
+      expectTypeOf<'view'>().toExtend<AbilityAction>();
     });
 
     it('should still accept arbitrary strings as Action', () => {
-      expectTypeOf<'custom-action'>().toExtend<Action>();
-      expectTypeOf<'any-string'>().toExtend<Action>();
+      expectTypeOf<'custom-action'>().toExtend<AbilityAction>();
+      expectTypeOf<'any-string'>().toExtend<AbilityAction>();
     });
   });
 
@@ -271,13 +271,13 @@ describe('NgAbilityService type tests', () => {
     });
 
     it('should return Action for unknown matchers', () => {
-      expectTypeOf<ActionFor<'Unknown'>>().toEqualTypeOf<Action>();
-      expectTypeOf<ActionFor<'AnyOther'>>().toEqualTypeOf<Action>();
+      expectTypeOf<ActionFor<'Unknown'>>().toEqualTypeOf<AbilityAction>();
+      expectTypeOf<ActionFor<'AnyOther'>>().toEqualTypeOf<AbilityAction>();
     });
 
     it('should return Action for non-string types', () => {
-      expectTypeOf<ActionFor<object>>().toEqualTypeOf<Action>();
-      expectTypeOf<ActionFor<number>>().toEqualTypeOf<Action>();
+      expectTypeOf<ActionFor<object>>().toEqualTypeOf<AbilityAction>();
+      expectTypeOf<ActionFor<number>>().toEqualTypeOf<AbilityAction>();
     });
   });
 
