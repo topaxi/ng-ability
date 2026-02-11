@@ -2,6 +2,7 @@ import { EnvironmentProviders, makeEnvironmentProviders, NgModule } from '@angul
 import { Ability, AbilityContext } from './interfaces';
 import { ABILITY, ABILITY_CONTEXT } from './ng-ability.service';
 import { CanDirective } from './can.directive';
+import { CanPipe } from './can.pipe';
 
 export function provideAbilities(
   contextClass: { new (...args: unknown[]): AbilityContext<unknown> },
@@ -14,8 +15,8 @@ export function provideAbilities(
 }
 
 @NgModule({
-  imports: [CanDirective],
-  exports: [CanDirective],
+  imports: [CanDirective, CanPipe],
+  exports: [CanDirective, CanPipe],
 })
 export class NgAbilityModule {
   static withAbilities(

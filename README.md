@@ -108,7 +108,21 @@ export class AppModule {}
 
 ### 4. Check abilities
 
-**In templates** using the `*can` structural directive (import `CanDirective` or `NgAbilityModule`):
+**In templates** using the `can` pipe (import `CanPipe` or `NgAbilityModule`):
+
+```html
+@if ('Article' | can: 'create') {
+  I can create new articles!
+}
+
+@if (latestArticle | can: 'edit') {
+  <button (click)="editArticle(latestArticle)">Edit latest article</button>
+} @else {
+  <div>Latest article is not editable :(</div>
+}
+```
+
+Alternatively, you can use the `*can` structural directive (import `CanDirective` or `NgAbilityModule`):
 
 ```html
 <div *can="['create', 'Article']">
