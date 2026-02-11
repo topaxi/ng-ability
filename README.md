@@ -35,19 +35,22 @@ Define abilities for pages, models, and other data:
 ```typescript
 import { AbilityFor, Ability } from 'ng-ability';
 
+// Define ability for Article instance objects, the string 'Article'
+// and graphql like objects using a matching function
 @AbilityFor(Article, 'Article', article => article.__typename === 'Article')
 export class ArticleAbility implements Ability<User, Article> {
   can(currentUser: User | null, action: string, article: Article) {
     if (currentUser != null && currentUser.admin) {
+      // Admins can do anything
       return true;
     }
 
     switch (action) {
-      case 'view':
+      case 'view': // Everyone can view articles
         return true;
-      case 'create':
+      case 'create': // Every user can create new articles
         return currentUser != null;
-      case 'edit':
+      case 'edit': // Users can only edit their own articles
         return currentUser != null && currentUser.id === article.authorId;
       default:
         return false;
@@ -59,7 +62,7 @@ export class ArticleAbility implements Ability<User, Article> {
 export class AdminAreaAbility implements Ability<User> {
   can(currentUser: User | null, action: string) {
     switch (action) {
-      case 'view':
+      case 'view': // Only admins can view the admin area
         return currentUser != null && currentUser.admin;
       default:
         return false;
