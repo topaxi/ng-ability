@@ -15,19 +15,16 @@ class TestContext implements AbilityContext<{ userId: string }> {
 }
 
 @AbilityFor('Article')
-@Injectable()
 class ArticleAbility implements Ability<{ userId: string }, string> {
   can = vi.fn(() => true);
 }
 
 @AbilityFor('Comment')
-@Injectable()
 class CommentAbility implements Ability<{ userId: string }, string> {
   can = vi.fn(() => false);
 }
 
 @AbilityFor('Post')
-@Injectable()
 class PostAbility implements Ability<{ userId: string }, string> {
   can = vi.fn(() => true);
 }
@@ -146,9 +143,7 @@ describe.each<{
 
     describe('with additional abilities from submodule', () => {
       beforeEach(() =>
-        TestBed.configureTestingModule(
-          withAdditionalAbilitiesFromSubmodule(),
-        ),
+        TestBed.configureTestingModule(withAdditionalAbilitiesFromSubmodule()),
       );
 
       it('should provide abilities from both root and submodule', () => {

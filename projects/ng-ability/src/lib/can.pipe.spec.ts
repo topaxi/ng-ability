@@ -1,5 +1,9 @@
+import { Injectable, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { NgAbilityService } from './ng-ability.service';
+import { AbilityFor } from './ability';
+import { Ability, AbilityContext } from './interfaces';
+import { provideAbilities } from './ng-ability.module';
+import { ABILITY_CONTEXT, NgAbilityService } from './ng-ability.service';
 import { CanPipe } from './can.pipe';
 
 describe('CanPipe', () => {
@@ -10,9 +14,7 @@ describe('CanPipe', () => {
     ngAbilityService = { can: vi.fn() };
 
     TestBed.configureTestingModule({
-      providers: [
-        { provide: NgAbilityService, useValue: ngAbilityService },
-      ],
+      providers: [{ provide: NgAbilityService, useValue: ngAbilityService }],
     });
 
     pipe = TestBed.runInInjectionContext(() => new CanPipe());
@@ -45,6 +47,42 @@ describe('CanPipe', () => {
     const article = { id: 1, title: 'Test' };
     ngAbilityService.can.mockReturnValue(true);
     pipe.transform('Article', 'edit', article);
-    expect(ngAbilityService.can).toHaveBeenCalledWith('Article', 'edit', article);
+    expect(ngAbilityService.can).toHaveBeenCalledWith(
+      'Article',
+      'edit',
+      article,
+    );
+  });
+});
+
+describe('CanPipe (with abilityContext)', () => {
+  @Injectable()
+  class TestContext implements AbilityContext<{ allowed: boolean }> {
+    readonly abilityContext = signal({ allowed: true });
+  }
+
+  @AbilityFor('Article')
+  class ArticleAbility implements Ability<{ allowed: boolean }, string> {
+    can(subject: { allowed: boolean } | null) {
+      return subject?.allowed ?? false;
+    }
+  }
+
+  beforeEach(() => {
+    TestBed.configureTestingModule({
+      providers: [provideAbilities(TestContext, [ArticleAbility])],
+    });
+  });
+
+  it('should return updated result when abilityContext signal changes', () => {
+    const pipe = TestBed.runInInjectionContext(() => new CanPipe());
+    expect(pipe.transform('Article', 'edit')).toBe(true);
+
+    const ctx = TestBed.inject(ABILITY_CONTEXT) as TestContext;
+    ctx.abilityContext.set({ allowed: false });
+    expect(pipe.transform('Article', 'edit')).toBe(false);
+
+    ctx.abilityContext.set({ allowed: true });
+    expect(pipe.transform('Article', 'edit')).toBe(true);
   });
 });

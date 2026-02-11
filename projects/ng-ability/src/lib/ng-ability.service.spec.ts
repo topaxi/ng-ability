@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { signal, WritableSignal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { AbilityFor } from './ability';
@@ -56,16 +56,18 @@ describe('NgAbilityService', () => {
   describe('with context', () => {
     let dummyAbility: Ability<any, any>;
     let context: any;
+    let contextSignal: WritableSignal<any>;
 
     beforeEach(() => {
       context = { id: '42' };
+      contextSignal = signal(context);
       dummyAbility = ability('Dummy');
 
       TestBed.configureTestingModule({
         providers: [
           {
             provide: ABILITY_CONTEXT,
-            useValue: { abilityContext: signal(context) },
+            useValue: { abilityContext: contextSignal },
           },
           { provide: ABILITY, useFactory: () => dummyAbility, multi: true },
         ],
@@ -89,6 +91,26 @@ describe('NgAbilityService', () => {
         context,
         'create',
         'value'
+      );
+    });
+
+    it('should pass updated context when abilityContext signal changes', () => {
+      const service: NgAbilityService = TestBed.inject(NgAbilityService);
+      service.can('Dummy', 'create');
+      expect(dummyAbility.can).toHaveBeenCalledWith(
+        { id: '42' },
+        'create',
+        'Dummy',
+      );
+
+      const newContext = { id: '99' };
+      contextSignal.set(newContext);
+
+      service.can('Dummy', 'edit');
+      expect(dummyAbility.can).toHaveBeenCalledWith(
+        newContext,
+        'edit',
+        'Dummy',
       );
     });
   });

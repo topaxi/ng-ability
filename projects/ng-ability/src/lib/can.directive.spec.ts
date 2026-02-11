@@ -12,7 +12,6 @@ class TestContext implements AbilityContext<{ allowed: boolean }> {
 }
 
 @AbilityFor('Article')
-@Injectable()
 class ArticleAbility implements Ability<{ allowed: boolean }, string> {
   can(subject: { allowed: boolean } | null) {
     return subject?.allowed ?? false;
@@ -108,6 +107,36 @@ describe('CanDirective', () => {
       await fixture.whenStable();
       expect(fixture.nativeElement.textContent).toContain('ALLOWED');
       expect(fixture.nativeElement.textContent).not.toContain('DENIED');
+    });
+
+    it('should re-render on every abilityContext change without input changes', async () => {
+      const fixture = TestBed.createComponent(HostWithElseComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fixture.nativeElement.textContent).toContain('ALLOWED');
+
+      const ctx = TestBed.inject(ABILITY_CONTEXT) as TestContext;
+
+      // Revoke permission
+      ctx.abilityContext.set({ allowed: false });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fixture.nativeElement.textContent).toContain('DENIED');
+      expect(fixture.nativeElement.textContent).not.toContain('ALLOWED');
+
+      // Grant again
+      ctx.abilityContext.set({ allowed: true });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fixture.nativeElement.textContent).toContain('ALLOWED');
+      expect(fixture.nativeElement.textContent).not.toContain('DENIED');
+
+      // Revoke once more
+      ctx.abilityContext.set({ allowed: false });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fixture.nativeElement.textContent).toContain('DENIED');
+      expect(fixture.nativeElement.textContent).not.toContain('ALLOWED');
     });
   });
 });
