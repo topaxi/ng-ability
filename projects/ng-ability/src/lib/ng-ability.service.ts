@@ -19,18 +19,14 @@ export class NgAbilityService {
   private readonly abilities = inject(ABILITY);
 
   can(action: string, thing: unknown): boolean;
-  can(
-    action: string,
-    matcher: AbilityMatcher<unknown>,
-    thing: unknown,
-  ): boolean;
-  can(action: string, matcher: unknown, thing?: unknown): boolean {
+  can<T>(action: string, matcher: AbilityMatcher<T>, thing: T): boolean;
+  can(action: string, matcherOrThing: unknown, thing?: unknown): boolean {
     if (arguments.length === 2) {
-      thing = matcher;
+      thing = matcherOrThing;
     }
 
     return Boolean(
-      this.getAbility(matcher).can(
+      this.getAbility(matcherOrThing).can(
         this.context.getAbilityContext(),
         action,
         thing,
@@ -49,7 +45,7 @@ export class NgAbilityService {
         }
 
         return matchers.some((matcher) => this.matchAbility(matcher, thing));
-      }) || inability
+      }) ?? inability
     );
   }
 
