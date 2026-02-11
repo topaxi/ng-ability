@@ -2,7 +2,7 @@ import type {
   AbilityActions,
   AbilityActionsOf,
   AbilityAction,
-  ActionFor,
+  AbilityActionFor,
 } from './interfaces';
 import type { NgAbilityService } from './ng-ability.service';
 import type { CanPipe } from './can.pipe';
@@ -39,14 +39,14 @@ describe('AbilityActions declaration merging', () => {
   });
 
   it('should narrow ActionFor for known matchers', () => {
-    expectTypeOf<ActionFor<'Article'>>().toEqualTypeOf<
+    expectTypeOf<AbilityActionFor<'Article'>>().toEqualTypeOf<
       'view' | 'create' | 'edit'
     >();
-    expectTypeOf<ActionFor<'AdminArea'>>().toEqualTypeOf<'view'>();
+    expectTypeOf<AbilityActionFor<'AdminArea'>>().toEqualTypeOf<'view'>();
   });
 
   it('should return Action for unknown matchers', () => {
-    expectTypeOf<ActionFor<'Unknown'>>().toEqualTypeOf<AbilityAction>();
+    expectTypeOf<AbilityActionFor<'Unknown'>>().toEqualTypeOf<AbilityAction>();
   });
 });
 

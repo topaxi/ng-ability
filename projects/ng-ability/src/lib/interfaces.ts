@@ -15,7 +15,7 @@ export type AbilityAction =
   | AbilityActions[keyof AbilityActions]
   | (string & {});
 
-export type ActionFor<M> = M extends keyof AbilityActions
+export type AbilityActionFor<M> = M extends keyof AbilityActions
   ? AbilityActions[M]
   : AbilityAction;
 

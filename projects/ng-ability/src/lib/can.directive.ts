@@ -11,7 +11,7 @@ import type {
   AbilityActions,
   AbilityActionsOf,
   AbilityMatcher,
-  ActionFor,
+  AbilityActionFor,
 } from './interfaces';
 import { NgAbilityService } from './ng-ability.service';
 
@@ -26,8 +26,8 @@ type CanDirectiveInput<M = unknown> =
         unknown?,
       ];
     }[keyof AbilityActions]
-  | [M, ActionFor<M>]
-  | [AbilityMatcher<unknown>, ActionFor<M>, unknown?];
+  | [M, AbilityActionFor<M>]
+  | [AbilityMatcher<unknown>, AbilityActionFor<M>, unknown?];
 
 @Directive({
   selector: '[can]',

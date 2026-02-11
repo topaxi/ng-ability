@@ -3,7 +3,7 @@ import type {
   AbilityActions,
   AbilityActionsOf,
   AbilityMatcher,
-  ActionFor,
+  AbilityActionFor,
 } from './interfaces';
 import { NgAbilityService } from './ng-ability.service';
 
@@ -24,8 +24,12 @@ export class CanPipe implements PipeTransform {
     action: AbilityActions[K],
     thing?: unknown,
   ): boolean;
-  transform<M>(matcher: M, action: ActionFor<NoInfer<M>>): boolean;
-  transform<T, M extends AbilityMatcher<T>>(matcher: M, action: ActionFor<NoInfer<M>>, thing: T): boolean;
+  transform<M>(matcher: M, action: AbilityActionFor<NoInfer<M>>): boolean;
+  transform<T, M extends AbilityMatcher<T>>(
+    matcher: M,
+    action: AbilityActionFor<NoInfer<M>>,
+    thing: T,
+  ): boolean;
   transform(matcher: unknown, action: string, thing?: unknown): boolean {
     if (thing !== undefined) {
       return (this.ngAbilityService.can as (...args: unknown[]) => boolean)(
