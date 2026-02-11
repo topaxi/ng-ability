@@ -1,4 +1,4 @@
-import type { AbilityActions, Action } from './interfaces';
+import type { AbilityActions, AbilityActionsOf, Action } from './interfaces';
 import type { NgAbilityService } from './ng-ability.service';
 
 declare module './interfaces' {
@@ -67,6 +67,27 @@ describe('NgAbilityService.can() type overloads', () => {
       Model,
       'edit',
       new Model(),
+    );
+  });
+
+  it('should narrow actions for class-based matchers using AbilityActionsOf', () => {
+    class ArticleModel implements AbilityActionsOf<'Article'> {}
+
+    expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+      ArticleModel,
+      'view',
+    );
+    expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+      ArticleModel,
+      'create',
+    );
+    expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+      ArticleModel,
+      'edit',
+    );
+    expectTypeOf<NgAbilityService['can']>().toBeCallableWith(
+      ArticleModel,
+      'arbitrary',
     );
   });
 });

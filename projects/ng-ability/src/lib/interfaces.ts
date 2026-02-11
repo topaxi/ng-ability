@@ -5,6 +5,12 @@ export type AbilityMatcher<T> = { new (): T } | ((t: T) => boolean) | string;
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface AbilityActions {}
 
+declare const abilityActionsKey: unique symbol;
+
+export interface AbilityActionsOf<K extends keyof AbilityActions> {
+  readonly [abilityActionsKey]?: K;
+}
+
 export type Action = AbilityActions[keyof AbilityActions] | (string & {});
 
 export interface Ability<S, O = never> {

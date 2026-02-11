@@ -1,5 +1,5 @@
 import { inject, Injectable, InjectionToken, signal } from '@angular/core';
-import { type AbilityActions, type Action, type Ability, type AbilityMatcher, type AbilityContext } from './interfaces';
+import { type AbilityActions, type AbilityActionsOf, type Action, type Ability, type AbilityMatcher, type AbilityContext } from './interfaces';
 import { getAbilityMatchers } from './ability';
 
 const nullContext: AbilityContext<null> = { abilityContext: signal(null) };
@@ -19,6 +19,7 @@ export class NgAbilityService {
   private readonly abilities = inject(ABILITY);
 
   can<M extends keyof AbilityActions>(matcher: M, action: AbilityActions[M] | (string & {}), thing?: unknown): boolean;
+  can<K extends keyof AbilityActions>(matcher: new (...args: never[]) => AbilityActionsOf<K>, action: AbilityActions[K] | (string & {}), thing?: unknown): boolean;
   can(matcher: unknown, action: Action): boolean;
   can<T>(matcher: AbilityMatcher<T>, action: Action, thing: T): boolean;
   can(matcherOrThing: unknown, action: string, thing?: unknown): boolean {
