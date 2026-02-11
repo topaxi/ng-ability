@@ -1,4 +1,4 @@
-import { Injectable, NgModule } from '@angular/core';
+import { Injectable, NgModule, signal } from '@angular/core';
 import { TestBed, TestModuleMetadata } from '@angular/core/testing';
 import { AbilityFor } from './ability';
 import { Ability, AbilityContext } from './interfaces';
@@ -11,9 +11,7 @@ import { NgAbilityModule, provideAbilities } from './ng-ability.module';
 
 @Injectable()
 class TestContext implements AbilityContext<{ userId: string }> {
-  getAbilityContext() {
-    return { userId: '42' };
-  }
+  readonly abilityContext = signal({ userId: '42' });
 }
 
 @AbilityFor('Article')
@@ -106,7 +104,7 @@ describe.each<{
 
       it('should use null context when no context is provided', () => {
         const context = TestBed.inject(ABILITY_CONTEXT);
-        expect(context.getAbilityContext()).toBeNull();
+        expect(context.abilityContext()).toBeNull();
       });
 
       it('should resolve abilities through NgAbilityService', () => {
@@ -123,7 +121,7 @@ describe.each<{
 
       it('should provide the context via ABILITY_CONTEXT token', () => {
         const context = TestBed.inject(ABILITY_CONTEXT);
-        expect(context.getAbilityContext()).toEqual({ userId: '42' });
+        expect(context.abilityContext()).toEqual({ userId: '42' });
       });
 
       it('should provide abilities via the ABILITY token', () => {

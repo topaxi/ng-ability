@@ -1,3 +1,4 @@
+import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 
 import { AbilityFor } from './ability';
@@ -64,7 +65,7 @@ describe('NgAbilityService', () => {
         providers: [
           {
             provide: ABILITY_CONTEXT,
-            useValue: { getAbilityContext: () => context },
+            useValue: { abilityContext: signal(context) },
           },
           { provide: ABILITY, useFactory: () => dummyAbility, multi: true },
         ],

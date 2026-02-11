@@ -1,8 +1,8 @@
-import { inject, Injectable, InjectionToken } from '@angular/core';
+import { inject, Injectable, InjectionToken, signal } from '@angular/core';
 import { type AbilityActions, type Action, type Ability, type AbilityMatcher, type AbilityContext } from './interfaces';
 import { getAbilityMatchers } from './ability';
 
-const nullContext: AbilityContext<null> = { getAbilityContext: () => null };
+const nullContext: AbilityContext<null> = { abilityContext: signal(null) };
 const inability: Ability<unknown, unknown> = { can: () => false };
 
 export const ABILITY_CONTEXT = new InjectionToken<AbilityContext<unknown>>(
@@ -28,7 +28,7 @@ export class NgAbilityService {
 
     return Boolean(
       this.getAbility(matcherOrThing).can(
-        this.context.getAbilityContext(),
+        this.context.abilityContext(),
         action,
         thing,
       ),

@@ -1,127 +1,113 @@
-import { TemplateRef, ViewContainerRef } from '@angular/core';
+import { Component, Injectable, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
-import { NgAbilityService } from './ng-ability.service';
+import { AbilityFor } from './ability';
+import { Ability, AbilityContext } from './interfaces';
+import { provideAbilities } from './ng-ability.module';
+import { ABILITY_CONTEXT } from './ng-ability.service';
 import { CanDirective } from './can.directive';
 
+@Injectable()
+class TestContext implements AbilityContext<{ allowed: boolean }> {
+  readonly abilityContext = signal({ allowed: true });
+}
+
+@AbilityFor('Article')
+@Injectable()
+class ArticleAbility implements Ability<{ allowed: boolean }, string> {
+  can(subject: { allowed: boolean } | null) {
+    return subject?.allowed ?? false;
+  }
+}
+
+@Component({
+  template: `<div *can="['Article', 'edit']">ALLOWED</div>`,
+  imports: [CanDirective],
+})
+class HostComponent {}
+
+@Component({
+  template: `
+    <div *can="['Article', 'edit']; else denied">ALLOWED</div>
+    <ng-template #denied>DENIED</ng-template>
+  `,
+  imports: [CanDirective],
+})
+class HostWithElseComponent {}
+
 describe('CanDirective', () => {
-  let ngAbilityService: { can: ReturnType<typeof vi.fn> };
-  let templateRef: TemplateRef<any>;
-  let viewContainerRef: { createEmbeddedView: ReturnType<typeof vi.fn>; destroy: ReturnType<typeof vi.fn> };
-  let can: CanDirective;
-
   beforeEach(() => {
-    ngAbilityService = { can: vi.fn() };
-    templateRef = {} as any;
-    viewContainerRef = {
-      createEmbeddedView: vi.fn(),
-      destroy: vi.fn(),
-    };
-
     TestBed.configureTestingModule({
-      providers: [
-        { provide: NgAbilityService, useValue: ngAbilityService },
-        { provide: TemplateRef, useValue: templateRef },
-        { provide: ViewContainerRef, useValue: viewContainerRef },
-      ],
+      providers: [provideAbilities(TestContext, [ArticleAbility])],
     });
-
-    can = TestBed.runInInjectionContext(() => new CanDirective());
   });
 
-  describe('ngDoCheck()', () => {
-    it('should not render anything without can parameter', () => {
-      can.ngDoCheck();
-      expect(viewContainerRef.createEmbeddedView).not.toHaveBeenCalled();
+  describe('with permission', () => {
+    it('should render content when permission is granted', () => {
+      const fixture = TestBed.createComponent(HostComponent);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain('ALLOWED');
     });
 
-    it('should call ability service with can parameters', () => {
-      can.can = ['Article', 'edit'];
-      can.ngDoCheck();
-      expect(ngAbilityService.can).toHaveBeenCalledWith('Article', 'edit');
+    it('should not render else template when permission is granted', () => {
+      const fixture = TestBed.createComponent(HostWithElseComponent);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.textContent).toContain('ALLOWED');
+      expect(fixture.nativeElement.textContent).not.toContain('DENIED');
+    });
+  });
 
-      can.can = ['Article', 'edit', {}];
-      can.ngDoCheck();
-      expect(ngAbilityService.can).toHaveBeenCalledWith('Article', 'edit', {});
+  describe('without permission', () => {
+    it('should not render content when permission is denied', async () => {
+      const ctx = TestBed.inject(ABILITY_CONTEXT) as TestContext;
+      ctx.abilityContext.set({ allowed: false });
+
+      const fixture = TestBed.createComponent(HostComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fixture.nativeElement.textContent).not.toContain('ALLOWED');
     });
 
-    describe('with permission', () => {
-      beforeEach(() => {
-        can.can = ['Article', 'edit'];
-        ngAbilityService.can.mockReturnValue(true);
-      });
+    it('should render else template when permission is denied', async () => {
+      const ctx = TestBed.inject(ABILITY_CONTEXT) as TestContext;
+      ctx.abilityContext.set({ allowed: false });
 
-      it('should render templateRef', () => {
-        can.ngDoCheck();
-        expect(viewContainerRef.createEmbeddedView).toHaveBeenCalledWith(
-          templateRef
-        );
-      });
+      const fixture = TestBed.createComponent(HostWithElseComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fixture.nativeElement.textContent).toContain('DENIED');
+      expect(fixture.nativeElement.textContent).not.toContain('ALLOWED');
+    });
+  });
 
-      it('should not rerender on subsequent calls', () => {
-        can.ngDoCheck();
-        can.ngDoCheck();
-        can.ngDoCheck();
-        expect(viewContainerRef.createEmbeddedView).toHaveBeenCalledTimes(1);
-      });
+  describe('toggling permission', () => {
+    it('should update when context changes from allowed to denied', async () => {
+      const fixture = TestBed.createComponent(HostWithElseComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fixture.nativeElement.textContent).toContain('ALLOWED');
 
-      it('should clear else template and instantiate templateRef', () => {
-        const elseTemplate: any = {};
-        can.canElse = elseTemplate;
-        ngAbilityService.can.mockReturnValue(false);
-        const elseView = { destroy: vi.fn() };
-        viewContainerRef.createEmbeddedView.mockReturnValue(elseView);
-        can.ngDoCheck();
-        ngAbilityService.can.mockReturnValue(true);
-        can.ngDoCheck();
-        expect(elseView.destroy).toHaveBeenCalled();
-        expect(viewContainerRef.createEmbeddedView).toHaveBeenCalledWith(
-          templateRef
-        );
-      });
+      const ctx = TestBed.inject(ABILITY_CONTEXT) as TestContext;
+      ctx.abilityContext.set({ allowed: false });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fixture.nativeElement.textContent).toContain('DENIED');
+      expect(fixture.nativeElement.textContent).not.toContain('ALLOWED');
     });
 
-    describe('without permission', () => {
-      beforeEach(() => {
-        can.can = ['Article', 'edit'];
-        ngAbilityService.can.mockReturnValue(false);
-      });
+    it('should update when context changes from denied to allowed', async () => {
+      const ctx = TestBed.inject(ABILITY_CONTEXT) as TestContext;
+      ctx.abilityContext.set({ allowed: false });
 
-      it('should not render templateRef', () => {
-        can.ngDoCheck();
-        expect(viewContainerRef.createEmbeddedView).not.toHaveBeenCalled();
-      });
+      const fixture = TestBed.createComponent(HostWithElseComponent);
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fixture.nativeElement.textContent).toContain('DENIED');
 
-      it('should render else template', () => {
-        const elseTemplate: any = {};
-        can.canElse = elseTemplate;
-        can.ngDoCheck();
-        expect(viewContainerRef.createEmbeddedView).toHaveBeenCalledWith(
-          elseTemplate
-        );
-      });
-
-      it('should not rerender on subsequent calls', () => {
-        can.canElse = {} as any;
-        can.ngDoCheck();
-        can.ngDoCheck();
-        can.ngDoCheck();
-        expect(viewContainerRef.createEmbeddedView).toHaveBeenCalledTimes(1);
-      });
-
-      it('should clear templateRef and instantiate else template', () => {
-        const elseTemplate: any = {};
-        can.canElse = elseTemplate;
-        ngAbilityService.can.mockReturnValue(true);
-        const embeddedView = { destroy: vi.fn() };
-        viewContainerRef.createEmbeddedView.mockReturnValue(embeddedView);
-        can.ngDoCheck();
-        ngAbilityService.can.mockReturnValue(false);
-        can.ngDoCheck();
-        expect(embeddedView.destroy).toHaveBeenCalled();
-        expect(viewContainerRef.createEmbeddedView).toHaveBeenCalledWith(
-          elseTemplate
-        );
-      });
+      ctx.abilityContext.set({ allowed: true });
+      fixture.detectChanges();
+      await fixture.whenStable();
+      expect(fixture.nativeElement.textContent).toContain('ALLOWED');
+      expect(fixture.nativeElement.textContent).not.toContain('DENIED');
     });
   });
 });
