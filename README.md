@@ -193,6 +193,61 @@ ability.can(article, 'edit');       // non-string matcher: suggests all register
 Arbitrary action strings are still accepted — the type narrows suggestions
 without rejecting unknown actions.
 
+#### Using `AbilityActionsOf` with class-based matchers
+
+When using class constructors as matchers, you can implement the `AbilityActionsOf<K>`
+interface to narrow the allowed actions based on your `AbilityActions` declaration:
+
+```typescript
+import { AbilityActionsOf } from 'ng-ability';
+
+// Declare your actions mapping
+declare module 'ng-ability' {
+  interface AbilityActions {
+    Article: 'view' | 'create' | 'edit';
+  }
+}
+
+// Link your class to the 'Article' actions
+export class Article implements AbilityActionsOf<'Article'> {
+  constructor(
+    public id: number,
+    public title: string,
+    public authorId: number,
+  ) {}
+}
+```
+
+Now when you pass the `Article` class constructor to ability checks, TypeScript
+will narrow the allowed actions to `'view' | 'create' | 'edit'`:
+
+```typescript
+// In components or services
+ability.can(Article, 'view');       // ✓ valid
+ability.can(Article, 'edit');       // ✓ valid
+ability.can(Article, 'delete');     // ✗ TypeScript error: 'delete' is not assignable
+
+// With an instance
+const myArticle = new Article(1, 'Hello', 42);
+ability.can(Article, 'edit', myArticle);  // ✓ valid with narrowed actions
+```
+
+**Why use `AbilityActionsOf`?**
+
+Without `AbilityActionsOf`, passing a class constructor accepts any action string,
+since TypeScript can't infer which actions apply to that class. By implementing
+`AbilityActionsOf<K>`, you create a type-level link between your class and its
+registered actions, enabling:
+
+- **Type safety**: Catch typos and invalid actions at compile time
+- **Autocompletion**: IDE suggests only valid actions for that class
+- **Self-documenting code**: The class declaration shows which actions are supported
+
+This is especially useful when:
+- You have many entity classes with different actions
+- You want to prevent mistakes like checking `ability.can(User, 'edit')` when `User` only supports `'view'`
+- You're passing class constructors instead of string matchers
+
 ## Development
 
 ### Build

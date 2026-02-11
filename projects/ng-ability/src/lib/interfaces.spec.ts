@@ -50,6 +50,42 @@ describe('AbilityActions declaration merging', () => {
   });
 });
 
+describe('AbilityActionsOf interface', () => {
+  it('should be satisfied by empty class (phantom type)', () => {
+    class ArticleModel implements AbilityActionsOf<'Article'> {}
+
+    // Should satisfy the type without requiring any properties
+    expectTypeOf<ArticleModel>().toMatchTypeOf<AbilityActionsOf<'Article'>>();
+  });
+
+  it('should allow multiple classes to implement same AbilityActionsOf', () => {
+    class ArticleModel implements AbilityActionsOf<'Article'> {}
+    class ArticleDTO implements AbilityActionsOf<'Article'> {}
+
+    expectTypeOf<ArticleModel>().toMatchTypeOf<AbilityActionsOf<'Article'>>();
+    expectTypeOf<ArticleDTO>().toMatchTypeOf<AbilityActionsOf<'Article'>>();
+  });
+
+  it('should support different keys for different classes', () => {
+    class ArticleModel implements AbilityActionsOf<'Article'> {}
+    class AdminAreaModel implements AbilityActionsOf<'AdminArea'> {}
+
+    expectTypeOf<ArticleModel>().toMatchTypeOf<AbilityActionsOf<'Article'>>();
+    expectTypeOf<AdminAreaModel>().toMatchTypeOf<
+      AbilityActionsOf<'AdminArea'>
+    >();
+  });
+
+  it('should be compatible with class constructors', () => {
+    class ArticleModel implements AbilityActionsOf<'Article'> {}
+
+    // The class constructor should be usable as a matcher
+    expectTypeOf<typeof ArticleModel>().toMatchTypeOf<
+      new () => AbilityActionsOf<'Article'>
+    >();
+  });
+});
+
 describe('NgAbilityService.can() type overloads', () => {
   it('should accept registered matcher with its declared actions', () => {
     expectTypeOf<NgAbilityService['can']>().toBeCallableWith('Article', 'view');
