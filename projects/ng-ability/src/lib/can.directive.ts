@@ -7,7 +7,7 @@ import {
   TemplateRef,
   ViewContainerRef,
 } from '@angular/core';
-import { AbilityMatcher } from './interfaces';
+import type { AbilityMatcher, Action } from './interfaces';
 import { NgAbilityService } from './ng-ability.service';
 
 @Directive({
@@ -16,7 +16,7 @@ import { NgAbilityService } from './ng-ability.service';
 })
 export class CanDirective implements DoCheck {
   @Input()
-  can?: [string, unknown] | [string, AbilityMatcher<unknown>, unknown?];
+  can?: [unknown, Action] | [AbilityMatcher<unknown>, Action, unknown?];
 
   @Input()
   canElse: TemplateRef<void> | null = null;

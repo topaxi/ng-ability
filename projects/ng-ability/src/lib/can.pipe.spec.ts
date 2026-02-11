@@ -18,10 +18,10 @@ describe('CanPipe', () => {
     pipe = TestBed.runInInjectionContext(() => new CanPipe());
   });
 
-  it('should call ability service with action and thing', () => {
+  it('should call ability service with thing and action', () => {
     ngAbilityService.can.mockReturnValue(true);
     pipe.transform('Article', 'create');
-    expect(ngAbilityService.can).toHaveBeenCalledWith('create', 'Article');
+    expect(ngAbilityService.can).toHaveBeenCalledWith('Article', 'create');
   });
 
   it('should return true when ability is granted', () => {
@@ -38,6 +38,13 @@ describe('CanPipe', () => {
     const article = { id: 1, title: 'Test' };
     ngAbilityService.can.mockReturnValue(true);
     expect(pipe.transform(article, 'edit')).toBe(true);
-    expect(ngAbilityService.can).toHaveBeenCalledWith('edit', article);
+    expect(ngAbilityService.can).toHaveBeenCalledWith(article, 'edit');
+  });
+
+  it('should pass thing as third argument when provided', () => {
+    const article = { id: 1, title: 'Test' };
+    ngAbilityService.can.mockReturnValue(true);
+    pipe.transform('Article', 'edit', article);
+    expect(ngAbilityService.can).toHaveBeenCalledWith('Article', 'edit', article);
   });
 });

@@ -1,5 +1,5 @@
 import { inject, Injectable, InjectionToken } from '@angular/core';
-import { Ability, AbilityMatcher, AbilityContext } from './interfaces';
+import { type AbilityActions, type Action, type Ability, type AbilityMatcher, type AbilityContext } from './interfaces';
 import { getAbilityMatchers } from './ability';
 
 const nullContext: AbilityContext<null> = { getAbilityContext: () => null };
@@ -18,9 +18,10 @@ export class NgAbilityService {
   private readonly context = inject(ABILITY_CONTEXT);
   private readonly abilities = inject(ABILITY);
 
-  can(action: string, thing: unknown): boolean;
-  can<T>(action: string, matcher: AbilityMatcher<T>, thing: T): boolean;
-  can(action: string, matcherOrThing: unknown, thing?: unknown): boolean {
+  can<M extends keyof AbilityActions>(matcher: M, action: AbilityActions[M] | (string & {}), thing?: unknown): boolean;
+  can(matcher: unknown, action: Action): boolean;
+  can<T>(matcher: AbilityMatcher<T>, action: Action, thing: T): boolean;
+  can(matcherOrThing: unknown, action: string, thing?: unknown): boolean {
     if (arguments.length === 2) {
       thing = matcherOrThing;
     }

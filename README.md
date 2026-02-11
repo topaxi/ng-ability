@@ -122,13 +122,24 @@ export class AppModule {}
 }
 ```
 
+When an entity can be identified on its own — for example via `instanceof` or a
+field like `__typename` in GraphQL responses — passing it directly is enough.
+If the entity cannot be inferred, you can pass an explicit matcher as the pipe
+value and the entity as a third argument:
+
+```html
+@if ('Article' | can: 'read' : draftArticle) {
+  I can read this draft article!
+}
+```
+
 Alternatively, you can use the `*can` structural directive (import `CanDirective` or `NgAbilityModule`):
 
 ```html
-<div *can="['create', 'Article']">
+<div *can="['Article', 'create']">
   I can create new articles!
 </div>
-<div *can="['edit', latestArticle]; else noteditable">
+<div *can="[latestArticle, 'edit']; else noteditable">
   <button (click)="editArticle(latestArticle)">Edit latest article</button>
 </div>
 <ng-template #noteditable>
@@ -147,12 +158,40 @@ export class AppComponent {
   private readonly ability = inject(NgAbilityService);
 
   editArticle(article: Article) {
-    if (this.ability.can('edit', article)) {
+    if (this.ability.can(article, 'edit')) {
       // edit article...
     }
   }
 }
 ```
+
+### 5. Type-safe action strings (optional)
+
+By default, the `action` parameter accepts any string. You can register known
+actions per matcher via declaration merging on the `AbilityActions` interface to
+get autocompletion:
+
+```typescript
+// e.g. in src/ability-actions.d.ts
+declare module 'ng-ability' {
+  interface AbilityActions {
+    Article: 'view' | 'create' | 'edit';
+    AdminArea: 'view';
+  }
+}
+```
+
+With this in place, calls using a registered matcher key will suggest the
+corresponding actions:
+
+```typescript
+ability.can('Article', 'edit');     // autocomplete suggests 'view' | 'create' | 'edit'
+ability.can('AdminArea', 'view');   // autocomplete suggests 'view'
+ability.can(article, 'edit');       // non-string matcher: suggests all registered actions
+```
+
+Arbitrary action strings are still accepted — the type narrows suggestions
+without rejecting unknown actions.
 
 ## Development
 

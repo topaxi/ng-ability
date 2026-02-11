@@ -22,7 +22,7 @@ describe('NgAbilityService', () => {
 
     it('should be created', () => {
       const service: NgAbilityService = TestBed.inject(NgAbilityService);
-      expect(service.can('edit', 'something')).toBe(false);
+      expect(service.can('something', 'edit')).toBe(false);
     });
   });
 
@@ -41,13 +41,13 @@ describe('NgAbilityService', () => {
 
     it('should call ability with null context', () => {
       const service: NgAbilityService = TestBed.inject(NgAbilityService);
-      service.can('create', 'Dummy');
+      service.can('Dummy', 'create');
       expect(dummyAbility.can).toHaveBeenCalledWith(null, 'create', 'Dummy');
     });
 
     it('should be able to override value', () => {
       const service: NgAbilityService = TestBed.inject(NgAbilityService);
-      service.can('create', 'Dummy', 'value');
+      service.can('Dummy', 'create', 'value');
       expect(dummyAbility.can).toHaveBeenCalledWith(null, 'create', 'value');
     });
   });
@@ -73,7 +73,7 @@ describe('NgAbilityService', () => {
 
     it('should call ability with provided context', () => {
       const service: NgAbilityService = TestBed.inject(NgAbilityService);
-      service.can('create', 'Dummy');
+      service.can('Dummy', 'create');
       expect(dummyAbility.can).toHaveBeenCalledWith(
         context,
         'create',
@@ -83,7 +83,7 @@ describe('NgAbilityService', () => {
 
     it('should be able to override value', () => {
       const service: NgAbilityService = TestBed.inject(NgAbilityService);
-      service.can('create', 'Dummy', 'value');
+      service.can('Dummy', 'create', 'value');
       expect(dummyAbility.can).toHaveBeenCalledWith(
         context,
         'create',
@@ -123,7 +123,7 @@ describe('NgAbilityService', () => {
 
     it('should resolve string based abilities', () => {
       const service: NgAbilityService = TestBed.inject(NgAbilityService);
-      service.can('create', 'MyString');
+      service.can('MyString', 'create');
       expect(stringAbility.can).toHaveBeenCalledWith(
         null,
         'create',
@@ -136,7 +136,7 @@ describe('NgAbilityService', () => {
 
     it('should resolve type based abilities', () => {
       const service: NgAbilityService = TestBed.inject(NgAbilityService);
-      service.can('create', Model);
+      service.can(Model, 'create');
       expect(stringAbility.can).not.toHaveBeenCalled();
       expect(typeAbility.can).toHaveBeenCalledWith(null, 'create', Model);
       expect(fnAbility.can).not.toHaveBeenCalled();
@@ -146,7 +146,7 @@ describe('NgAbilityService', () => {
     it('should resolve type based abilities with instances', () => {
       const service: NgAbilityService = TestBed.inject(NgAbilityService);
       const user = new Model();
-      service.can('edit', user);
+      service.can(user, 'edit');
       expect(stringAbility.can).not.toHaveBeenCalled();
       expect(typeAbility.can).toHaveBeenCalledWith(null, 'edit', user);
       expect(fnAbility.can).not.toHaveBeenCalled();
@@ -156,7 +156,7 @@ describe('NgAbilityService', () => {
     it('should resolve function based abilities', () => {
       const service: NgAbilityService = TestBed.inject(NgAbilityService);
       const myObject = { __typename: 'MyObject' };
-      service.can('create', myObject);
+      service.can(myObject, 'create');
       expect(stringAbility.can).not.toHaveBeenCalled();
       expect(typeAbility.can).not.toHaveBeenCalled();
       expect(fnAbility.can).toHaveBeenCalledWith(null, 'create', myObject);
@@ -166,14 +166,14 @@ describe('NgAbilityService', () => {
     it('should resolve abilities with multiple matchers', () => {
       const service: NgAbilityService = TestBed.inject(NgAbilityService);
 
-      service.can('create', 'Mixed');
+      service.can('Mixed', 'create');
       expect(stringAbility.can).not.toHaveBeenCalled();
       expect(typeAbility.can).not.toHaveBeenCalled();
       expect(fnAbility.can).not.toHaveBeenCalled();
       expect(mixedAbility.can).toHaveBeenCalledWith(null, 'create', 'Mixed');
       expect(mixedFnMatcher).not.toHaveBeenCalled();
 
-      service.can('create', Mixed);
+      service.can(Mixed, 'create');
       expect(stringAbility.can).not.toHaveBeenCalled();
       expect(typeAbility.can).not.toHaveBeenCalled();
       expect(fnAbility.can).not.toHaveBeenCalled();
@@ -181,7 +181,7 @@ describe('NgAbilityService', () => {
       expect(mixedFnMatcher).not.toHaveBeenCalled();
 
       const instance = new Mixed();
-      service.can('create', instance);
+      service.can(instance, 'create');
       expect(stringAbility.can).not.toHaveBeenCalled();
       expect(typeAbility.can).not.toHaveBeenCalled();
       expect(fnAbility.can).not.toHaveBeenCalled();
@@ -189,7 +189,7 @@ describe('NgAbilityService', () => {
       expect(mixedFnMatcher).not.toHaveBeenCalled();
 
       const obj = { __typename: 'Mixed' };
-      service.can('create', obj);
+      service.can(obj, 'create');
       expect(stringAbility.can).not.toHaveBeenCalled();
       expect(typeAbility.can).not.toHaveBeenCalled();
       expect(fnAbility.can).not.toHaveBeenCalled();

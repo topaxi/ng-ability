@@ -35,18 +35,18 @@ describe('CanDirective', () => {
     });
 
     it('should call ability service with can parameters', () => {
-      can.can = ['edit', 'Article'];
+      can.can = ['Article', 'edit'];
       can.ngDoCheck();
-      expect(ngAbilityService.can).toHaveBeenCalledWith('edit', 'Article');
+      expect(ngAbilityService.can).toHaveBeenCalledWith('Article', 'edit');
 
-      can.can = ['edit', 'Article', {}];
+      can.can = ['Article', 'edit', {}];
       can.ngDoCheck();
-      expect(ngAbilityService.can).toHaveBeenCalledWith('edit', 'Article', {});
+      expect(ngAbilityService.can).toHaveBeenCalledWith('Article', 'edit', {});
     });
 
     describe('with permission', () => {
       beforeEach(() => {
-        can.can = ['edit', 'Article'];
+        can.can = ['Article', 'edit'];
         ngAbilityService.can.mockReturnValue(true);
       });
 
@@ -82,7 +82,7 @@ describe('CanDirective', () => {
 
     describe('without permission', () => {
       beforeEach(() => {
-        can.can = ['edit', 'Article'];
+        can.can = ['Article', 'edit'];
         ngAbilityService.can.mockReturnValue(false);
       });
 

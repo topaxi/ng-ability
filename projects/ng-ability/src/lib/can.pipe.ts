@@ -1,4 +1,5 @@
 import { inject, Pipe, PipeTransform } from '@angular/core';
+import type { Action } from './interfaces';
 import { NgAbilityService } from './ng-ability.service';
 
 @Pipe({
@@ -9,7 +10,11 @@ import { NgAbilityService } from './ng-ability.service';
 export class CanPipe implements PipeTransform {
   private readonly ngAbilityService = inject(NgAbilityService);
 
-  transform(thing: unknown, action: string): boolean {
-    return this.ngAbilityService.can(action, thing);
+  transform(matcher: unknown, action: Action, thing?: unknown): boolean {
+    if (thing !== undefined) {
+      return (this.ngAbilityService.can as (...args: unknown[]) => boolean)(matcher, action, thing);
+    }
+
+    return this.ngAbilityService.can(matcher, action);
   }
 }
