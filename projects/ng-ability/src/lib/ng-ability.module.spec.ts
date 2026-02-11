@@ -2,12 +2,9 @@ import { Injectable, NgModule, signal } from '@angular/core';
 import { TestBed, TestModuleMetadata } from '@angular/core/testing';
 import { AbilityFor } from './ability';
 import { Ability, AbilityContext } from './interfaces';
-import {
-  ABILITY,
-  ABILITY_CONTEXT,
-  NgAbilityService,
-} from './ng-ability.service';
+import { NgAbilityService } from './ng-ability.service';
 import { NgAbilityModule, provideAbilities } from './ng-ability.module';
+import { ABILITY, ABILITY_CONTEXT } from './ng-ability.tokens';
 
 @Injectable()
 class TestContext implements AbilityContext<{ userId: string }> {

@@ -5,7 +5,7 @@ import {
   Provider,
 } from '@angular/core';
 import { Ability, AbilityContext } from './interfaces';
-import { ABILITY, ABILITY_CONTEXT } from './ng-ability.service';
+import { ABILITY, ABILITY_CONTEXT } from './ng-ability.tokens';
 import { CanDirective } from './can.directive';
 import { CanPipe } from './can.pipe';
 

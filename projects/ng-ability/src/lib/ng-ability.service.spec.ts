@@ -10,11 +10,8 @@ import type {
   AbilityAction,
   AbilityActionFor,
 } from './interfaces';
-import {
-  NgAbilityService,
-  ABILITY,
-  ABILITY_CONTEXT,
-} from './ng-ability.service';
+import { NgAbilityService } from './ng-ability.service';
+import { ABILITY, ABILITY_CONTEXT } from './ng-ability.tokens';
 
 declare module './interfaces' {
   interface AbilityActions {

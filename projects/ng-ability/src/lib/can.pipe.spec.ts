@@ -3,8 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { AbilityFor } from './ability';
 import { Ability, AbilityContext } from './interfaces';
 import { provideAbilities } from './ng-ability.module';
-import { ABILITY_CONTEXT, NgAbilityService } from './ng-ability.service';
+import { NgAbilityService } from './ng-ability.service';
 import { CanPipe } from './can.pipe';
+import { ABILITY_CONTEXT } from './ng-ability.tokens';
 
 describe('CanPipe', () => {
   let ngAbilityService: { can: ReturnType<typeof vi.fn> };

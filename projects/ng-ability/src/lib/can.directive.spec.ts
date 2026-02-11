@@ -3,7 +3,7 @@ import { TestBed } from '@angular/core/testing';
 import { AbilityFor } from './ability';
 import { Ability, AbilityContext } from './interfaces';
 import { provideAbilities } from './ng-ability.module';
-import { ABILITY_CONTEXT } from './ng-ability.service';
+import { ABILITY_CONTEXT } from './ng-ability.tokens';
 import { CanDirective } from './can.directive';
 
 @Injectable()

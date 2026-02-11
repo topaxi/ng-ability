@@ -1,24 +1,15 @@
-import { inject, Injectable, InjectionToken, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import {
   type AbilityActions,
   type AbilityActionsOf,
   type AbilityActionFor,
   type Ability,
   type AbilityMatcher,
-  type AbilityContext,
 } from './interfaces';
 import { getAbilityMatchers } from './ability';
+import { ABILITY, ABILITY_CONTEXT } from './ng-ability.tokens';
 
-const nullContext: AbilityContext<null> = { abilityContext: signal(null) };
 const inability: Ability<unknown, unknown> = { can: () => false };
-
-export const ABILITY_CONTEXT = new InjectionToken<AbilityContext<unknown>>(
-  'AbilityContext',
-  { factory: () => nullContext },
-);
-export const ABILITY = new InjectionToken<
-  ReadonlyArray<Ability<unknown, unknown>>
->('Ability', { factory: () => [] });
 
 @Injectable({ providedIn: 'root' })
 export class NgAbilityService {
