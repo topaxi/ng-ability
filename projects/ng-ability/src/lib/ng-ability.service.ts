@@ -2,21 +2,21 @@ import { inject, Injectable, InjectionToken } from '@angular/core';
 import { Ability, AbilityMatcher, AbilityContext } from './interfaces';
 import { getAbilityMatchers } from './ability';
 
-export const ABILITY_CONTEXT = new InjectionToken<AbilityContext<unknown>>(
-  'AbilityContext',
-);
-export const ABILITY = new InjectionToken<Ability<unknown, unknown>[]>(
-  'Ability',
-);
-
 const nullContext: AbilityContext<null> = { getAbilityContext: () => null };
 const inability: Ability<unknown, unknown> = { can: () => false };
 
+export const ABILITY_CONTEXT = new InjectionToken<AbilityContext<unknown>>(
+  'AbilityContext',
+  { factory: () => nullContext },
+);
+export const ABILITY = new InjectionToken<
+  ReadonlyArray<Ability<unknown, unknown>>
+>('Ability', { factory: () => [] });
+
 @Injectable({ providedIn: 'root' })
 export class NgAbilityService {
-  private readonly context =
-    inject(ABILITY_CONTEXT, { optional: true }) ?? nullContext;
-  private readonly abilities = inject(ABILITY, { optional: true }) ?? [];
+  private readonly context = inject(ABILITY_CONTEXT);
+  private readonly abilities = inject(ABILITY);
 
   can(action: string, thing: unknown): boolean;
   can(
