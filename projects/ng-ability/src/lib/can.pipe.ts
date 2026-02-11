@@ -4,7 +4,6 @@ import { NgAbilityService } from './ng-ability.service';
 
 @Pipe({
   name: 'can',
-  standalone: true,
   pure: false,
 })
 export class CanPipe implements PipeTransform {

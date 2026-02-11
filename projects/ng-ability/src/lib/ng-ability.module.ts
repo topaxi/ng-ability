@@ -40,6 +40,9 @@ export function provideAbilities(
   ]);
 }
 
+/**
+ * @deprecated Use `provideAbilities()` for configuration and import `CanDirective`/`CanPipe` directly in your components.
+ */
 @NgModule({
   imports: [CanDirective, CanPipe],
   exports: [CanDirective, CanPipe],
