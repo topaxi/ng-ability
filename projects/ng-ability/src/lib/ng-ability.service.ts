@@ -2,32 +2,45 @@ import { inject, Injectable, InjectionToken } from '@angular/core';
 import { Ability, AbilityMatcher, AbilityContext } from './interfaces';
 import { getAbilityMatchers } from './ability';
 
-export const ABILITY_CONTEXT = new InjectionToken<AbilityContext<any>>(
-  'AbilityContext'
+export const ABILITY_CONTEXT = new InjectionToken<AbilityContext<unknown>>(
+  'AbilityContext',
 );
-export const ABILITY = new InjectionToken<Ability<any, any>[]>('Ability');
+export const ABILITY = new InjectionToken<Ability<unknown, unknown>[]>(
+  'Ability',
+);
 
 const nullContext: AbilityContext<null> = { getAbilityContext: () => null };
-const inability: Ability<any, any> = { can: () => false };
+const inability: Ability<unknown, unknown> = { can: () => false };
 
 @Injectable({ providedIn: 'root' })
 export class NgAbilityService {
-  private readonly context = inject(ABILITY_CONTEXT, { optional: true }) ?? nullContext;
+  private readonly context =
+    inject(ABILITY_CONTEXT, { optional: true }) ?? nullContext;
   private readonly abilities = inject(ABILITY, { optional: true }) ?? [];
 
-  can(action: string, thing: any): boolean;
-  can(action: string, matcher: AbilityMatcher<any>, thing: any): boolean;
-  can(action: string, matcher: any, thing?: any): boolean {
+  can(action: string, thing: unknown): boolean;
+  can(
+    action: string,
+    matcher: AbilityMatcher<unknown>,
+    thing: unknown,
+  ): boolean;
+  can(action: string, matcher: unknown, thing?: unknown): boolean {
     if (arguments.length === 2) {
       thing = matcher;
     }
 
-    return Boolean(this.getAbility(matcher).can(this.context.getAbilityContext(), action, thing));
+    return Boolean(
+      this.getAbility(matcher).can(
+        this.context.getAbilityContext(),
+        action,
+        thing,
+      ),
+    );
   }
 
-  private getAbility(thing: any): Ability<any, any> {
+  private getAbility(thing: unknown): Ability<unknown, unknown> {
     return (
-      this.abilities.find(ability => {
+      this.abilities.find((ability) => {
         const matchers = getAbilityMatchers(ability.constructor);
 
         if (!Array.isArray(matchers) || matchers.length === 0) {
@@ -35,19 +48,22 @@ export class NgAbilityService {
           return false;
         }
 
-        return matchers.some(matcher => this.matchAbility(matcher, thing));
+        return matchers.some((matcher) => this.matchAbility(matcher, thing));
       }) || inability
     );
   }
 
-  private matchAbility(matcher: AbilityMatcher<any>, thing: any): boolean {
+  private matchAbility(
+    matcher: AbilityMatcher<unknown>,
+    thing: unknown,
+  ): boolean {
     if (matcher === thing) {
       return true;
     }
 
     if (typeof matcher === 'function') {
       try {
-        if (thing instanceof (matcher as any)) {
+        if (thing instanceof matcher) {
           return true;
         }
       } catch (e) {
@@ -55,7 +71,9 @@ export class NgAbilityService {
       }
 
       try {
-        return (matcher as any)(thing) === true;
+        // In case a class is passed, it might throw, therefore we try/catch
+        // and cast the value to a function.
+        return (matcher as (thing: unknown) => boolean)(thing) === true;
       } catch (e) {
         return false;
       }

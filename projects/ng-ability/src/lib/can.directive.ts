@@ -16,7 +16,7 @@ import { NgAbilityService } from './ng-ability.service';
 })
 export class CanDirective implements DoCheck {
   @Input()
-  can?: [string, any] | [string, AbilityMatcher<any>, any?];
+  can?: [string, unknown] | [string, AbilityMatcher<unknown>, unknown?];
 
   @Input()
   canElse: TemplateRef<void> | null = null;
@@ -31,7 +31,7 @@ export class CanDirective implements DoCheck {
   ngDoCheck(): void {
     if (
       this.can != null &&
-      (this.ngAbilityService.can as (...args: any[]) => boolean).apply(this.ngAbilityService, this.can) === true
+      (this.ngAbilityService.can as (...args: unknown[]) => boolean).apply(this.ngAbilityService, this.can) === true
     ) {
       if (this.elseView !== null) {
         this.elseView.destroy();

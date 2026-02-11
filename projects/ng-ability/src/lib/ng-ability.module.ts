@@ -4,8 +4,8 @@ import { ABILITY, ABILITY_CONTEXT } from './ng-ability.service';
 import { CanDirective } from './can.directive';
 
 export function provideAbilities(
-  contextClass: { new (...args: any[]): AbilityContext<any> },
-  abilities: { new (...args: any[]): Ability<any, any> }[]
+  contextClass: { new (...args: unknown[]): AbilityContext<unknown> },
+  abilities: { new (...args: unknown[]): Ability<unknown, unknown> }[]
 ): EnvironmentProviders {
   return makeEnvironmentProviders([
     { provide: ABILITY_CONTEXT, useClass: contextClass },
@@ -19,8 +19,8 @@ export function provideAbilities(
 })
 export class NgAbilityModule {
   static withAbilities(
-    contextClass: { new (...args: any[]): AbilityContext<any> },
-    abilities: { new (...args: any[]): Ability<any, any> }[]
+    contextClass: { new (...args: unknown[]): AbilityContext<unknown> },
+    abilities: { new (...args: unknown[]): Ability<unknown, unknown> }[]
   ) {
     return {
       ngModule: NgAbilityModule,

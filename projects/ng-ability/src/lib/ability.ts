@@ -1,14 +1,14 @@
 import { AbilityMatcher } from './interfaces';
 
-const abilityMatchersMap = new WeakMap<Function, AbilityMatcher<any>[]>();
+const abilityMatchersMap = new WeakMap<Function, AbilityMatcher<unknown>[]>();
 
-export function getAbilityMatchers(klass: Function): AbilityMatcher<any>[] | undefined {
+export function getAbilityMatchers(klass: Function): AbilityMatcher<unknown>[] | undefined {
   return abilityMatchersMap.get(klass);
 }
 
-export function AbilityFor<T>(...abilityMatchers: AbilityMatcher<T>[]): any {
-  return (klass: Function) => {
-    abilityMatchersMap.set(klass, abilityMatchers);
+export function AbilityFor<T>(...abilityMatchers: AbilityMatcher<T>[]): ClassDecorator {
+  return <TFunction extends Function>(klass: TFunction) => {
+    abilityMatchersMap.set(klass, abilityMatchers as AbilityMatcher<unknown>[]);
     return klass;
   };
 }
