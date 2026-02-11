@@ -1,30 +1,33 @@
-import { NgModule } from '@angular/core';
-import { AbilityContext, Ability } from './interfaces';
+import { EnvironmentProviders, makeEnvironmentProviders, NgModule } from '@angular/core';
+import { Ability, AbilityContext } from './interfaces';
 import { ABILITY, ABILITY_CONTEXT } from './ng-ability.service';
 import { CanDirective } from './can.directive';
 
-export function abilityToProvider(abilityClass) {
-  return {
-    provide: ABILITY,
-    useClass: abilityClass,
-    multi: true
-  };
+export function provideAbilities(
+  contextClass: { new (...args: any[]): AbilityContext<any> },
+  abilities: { new (...args: any[]): Ability<any, any> }[]
+): EnvironmentProviders {
+  return makeEnvironmentProviders([
+    { provide: ABILITY_CONTEXT, useClass: contextClass },
+    ...abilities.map(a => ({ provide: ABILITY, useClass: a, multi: true })),
+  ]);
 }
 
 @NgModule({
-  declarations: [CanDirective],
-  exports: [CanDirective]
+  imports: [CanDirective],
+  exports: [CanDirective],
 })
 export class NgAbilityModule {
   static withAbilities(
-    contextClass: { new (): AbilityContext<any> },
-    abilities: { new (): Ability<any, any> }[]
+    contextClass: { new (...args: any[]): AbilityContext<any> },
+    abilities: { new (...args: any[]): Ability<any, any> }[]
   ) {
     return {
       ngModule: NgAbilityModule,
-      providers: abilities
-        .map(abilityToProvider)
-        .concat({ provide: ABILITY_CONTEXT, useClass: contextClass } as any)
+      providers: [
+        { provide: ABILITY_CONTEXT, useClass: contextClass },
+        ...abilities.map(a => ({ provide: ABILITY, useClass: a, multi: true })),
+      ],
     };
   }
 }

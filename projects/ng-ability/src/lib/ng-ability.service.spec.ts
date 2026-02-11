@@ -5,14 +5,14 @@ import { Ability, AbilityMatcher } from './interfaces';
 import {
   NgAbilityService,
   ABILITY,
-  ABILITY_CONTEXT
+  ABILITY_CONTEXT,
 } from './ng-ability.service';
 
 describe('NgAbilityService', () => {
   function ability<T>(...matchers: AbilityMatcher<T>[]): Ability<any, T> {
     @AbilityFor(...matchers)
     class DummyAbility {
-      can = jasmine.createSpy('DummyAbility#can');
+      can = vi.fn();
     }
     return new DummyAbility();
   }
@@ -21,7 +21,7 @@ describe('NgAbilityService', () => {
     beforeEach(() => TestBed.configureTestingModule({}));
 
     it('should be created', () => {
-      const service: NgAbilityService = TestBed.get(NgAbilityService);
+      const service: NgAbilityService = TestBed.inject(NgAbilityService);
       expect(service.can('edit', 'something')).toBe(false);
     });
   });
@@ -34,19 +34,19 @@ describe('NgAbilityService', () => {
 
       TestBed.configureTestingModule({
         providers: [
-          { provide: ABILITY, useFactory: () => dummyAbility, multi: true }
-        ]
+          { provide: ABILITY, useFactory: () => dummyAbility, multi: true },
+        ],
       });
     });
 
     it('should call ability with null context', () => {
-      const service: NgAbilityService = TestBed.get(NgAbilityService);
+      const service: NgAbilityService = TestBed.inject(NgAbilityService);
       service.can('create', 'Dummy');
       expect(dummyAbility.can).toHaveBeenCalledWith(null, 'create', 'Dummy');
     });
 
     it('should be able to override value', () => {
-      const service: NgAbilityService = TestBed.get(NgAbilityService);
+      const service: NgAbilityService = TestBed.inject(NgAbilityService);
       service.can('create', 'Dummy', 'value');
       expect(dummyAbility.can).toHaveBeenCalledWith(null, 'create', 'value');
     });
@@ -64,15 +64,15 @@ describe('NgAbilityService', () => {
         providers: [
           {
             provide: ABILITY_CONTEXT,
-            useValue: { getAbilityContext: () => context }
+            useValue: { getAbilityContext: () => context },
           },
-          { provide: ABILITY, useFactory: () => dummyAbility, multi: true }
-        ]
+          { provide: ABILITY, useFactory: () => dummyAbility, multi: true },
+        ],
       });
     });
 
     it('should call ability with provided context', () => {
-      const service: NgAbilityService = TestBed.get(NgAbilityService);
+      const service: NgAbilityService = TestBed.inject(NgAbilityService);
       service.can('create', 'Dummy');
       expect(dummyAbility.can).toHaveBeenCalledWith(
         context,
@@ -82,7 +82,7 @@ describe('NgAbilityService', () => {
     });
 
     it('should be able to override value', () => {
-      const service: NgAbilityService = TestBed.get(NgAbilityService);
+      const service: NgAbilityService = TestBed.inject(NgAbilityService);
       service.can('create', 'Dummy', 'value');
       expect(dummyAbility.can).toHaveBeenCalledWith(
         context,
@@ -108,9 +108,7 @@ describe('NgAbilityService', () => {
       stringAbility = ability('MyString');
       typeAbility = ability(Model);
       fnAbility = ability(obj => obj.__typename === 'MyObject');
-      mixedFnMatcher = jasmine
-        .createSpy()
-        .and.callFake(obj => obj.__typename === 'Mixed');
+      mixedFnMatcher = vi.fn((obj: any) => obj.__typename === 'Mixed');
       mixedAbility = ability('Mixed', Mixed, mixedFnMatcher);
 
       TestBed.configureTestingModule({
@@ -118,13 +116,13 @@ describe('NgAbilityService', () => {
           { provide: ABILITY, useFactory: () => stringAbility, multi: true },
           { provide: ABILITY, useFactory: () => typeAbility, multi: true },
           { provide: ABILITY, useFactory: () => fnAbility, multi: true },
-          { provide: ABILITY, useFactory: () => mixedAbility, multi: true }
-        ]
+          { provide: ABILITY, useFactory: () => mixedAbility, multi: true },
+        ],
       });
     });
 
     it('should resolve string based abilities', () => {
-      const service: NgAbilityService = TestBed.get(NgAbilityService);
+      const service: NgAbilityService = TestBed.inject(NgAbilityService);
       service.can('create', 'MyString');
       expect(stringAbility.can).toHaveBeenCalledWith(
         null,
@@ -137,7 +135,7 @@ describe('NgAbilityService', () => {
     });
 
     it('should resolve type based abilities', () => {
-      const service: NgAbilityService = TestBed.get(NgAbilityService);
+      const service: NgAbilityService = TestBed.inject(NgAbilityService);
       service.can('create', Model);
       expect(stringAbility.can).not.toHaveBeenCalled();
       expect(typeAbility.can).toHaveBeenCalledWith(null, 'create', Model);
@@ -146,7 +144,7 @@ describe('NgAbilityService', () => {
     });
 
     it('should resolve type based abilities with instances', () => {
-      const service: NgAbilityService = TestBed.get(NgAbilityService);
+      const service: NgAbilityService = TestBed.inject(NgAbilityService);
       const user = new Model();
       service.can('edit', user);
       expect(stringAbility.can).not.toHaveBeenCalled();
@@ -156,7 +154,7 @@ describe('NgAbilityService', () => {
     });
 
     it('should resolve function based abilities', () => {
-      const service: NgAbilityService = TestBed.get(NgAbilityService);
+      const service: NgAbilityService = TestBed.inject(NgAbilityService);
       const myObject = { __typename: 'MyObject' };
       service.can('create', myObject);
       expect(stringAbility.can).not.toHaveBeenCalled();
@@ -166,8 +164,7 @@ describe('NgAbilityService', () => {
     });
 
     it('should resolve abilities with multiple matchers', () => {
-      const service: NgAbilityService = TestBed.get(NgAbilityService);
-      const myObject = { __typename: 'MyObject' };
+      const service: NgAbilityService = TestBed.inject(NgAbilityService);
 
       service.can('create', 'Mixed');
       expect(stringAbility.can).not.toHaveBeenCalled();

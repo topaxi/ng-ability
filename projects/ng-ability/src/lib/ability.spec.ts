@@ -1,20 +1,16 @@
-import 'reflect-metadata';
-import { AbilityFor } from './ability';
+import { AbilityFor, getAbilityMatchers } from './ability';
 
 describe('AbilityFor', () => {
-  let Model;
+  let Model: any;
 
   beforeEach(() => {
-    Model = class Model {}; // tslint:disable-line
+    Model = class Model {};
   });
 
-  it('should define abilityMatchers metadata on class', () => {
+  it('should define abilityMatchers on class', () => {
     @AbilityFor(Model, 'Model')
     class Test {}
 
-    expect(Reflect.getMetadata('abilityMatchers', Test)).toEqual([
-      Model,
-      'Model'
-    ]);
+    expect(getAbilityMatchers(Test)).toEqual([Model, 'Model']);
   });
 });

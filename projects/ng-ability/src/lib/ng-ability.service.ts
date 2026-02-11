@@ -1,6 +1,6 @@
-import 'reflect-metadata';
-import { Injectable, InjectionToken, Injector } from '@angular/core';
+import { inject, Injectable, InjectionToken } from '@angular/core';
 import { Ability, AbilityMatcher, AbilityContext } from './interfaces';
+import { getAbilityMatchers } from './ability';
 
 export const ABILITY_CONTEXT = new InjectionToken<AbilityContext<any>>(
   'AbilityContext'
@@ -12,15 +12,8 @@ const inability: Ability<any, any> = { can: () => false };
 
 @Injectable({ providedIn: 'root' })
 export class NgAbilityService {
-  private get context() {
-    return this.injector.get(ABILITY_CONTEXT, nullContext).getAbilityContext();
-  }
-
-  private get abilities() {
-    return this.injector.get(ABILITY, []);
-  }
-
-  constructor(private readonly injector: Injector) {}
+  private readonly context = inject(ABILITY_CONTEXT, { optional: true }) ?? nullContext;
+  private readonly abilities = inject(ABILITY, { optional: true }) ?? [];
 
   can(action: string, thing: any): boolean;
   can(action: string, matcher: AbilityMatcher<any>, thing: any): boolean;
@@ -29,16 +22,13 @@ export class NgAbilityService {
       thing = matcher;
     }
 
-    return Boolean(this.getAbility(matcher).can(this.context, action, thing));
+    return Boolean(this.getAbility(matcher).can(this.context.getAbilityContext(), action, thing));
   }
 
   private getAbility(thing: any): Ability<any, any> {
     return (
       this.abilities.find(ability => {
-        const matchers: AbilityMatcher<any>[] = Reflect.getMetadata(
-          'abilityMatchers',
-          ability.constructor
-        );
+        const matchers = getAbilityMatchers(ability.constructor);
 
         if (!Array.isArray(matchers) || matchers.length === 0) {
           console.error(`Unable to match ability without matcher`, ability);
@@ -56,8 +46,12 @@ export class NgAbilityService {
     }
 
     if (typeof matcher === 'function') {
-      if (thing instanceof matcher) {
-        return true;
+      try {
+        if (thing instanceof (matcher as any)) {
+          return true;
+        }
+      } catch (e) {
+        // Arrow functions don't have prototype, instanceof will throw
       }
 
       try {

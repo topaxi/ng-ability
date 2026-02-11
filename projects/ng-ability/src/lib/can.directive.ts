@@ -1,16 +1,18 @@
 import {
   Directive,
-  Input,
   DoCheck,
+  EmbeddedViewRef,
+  inject,
+  Input,
   TemplateRef,
   ViewContainerRef,
-  EmbeddedViewRef
 } from '@angular/core';
 import { AbilityMatcher } from './interfaces';
 import { NgAbilityService } from './ng-ability.service';
 
 @Directive({
-  selector: '[can]' // tslint:disable-line
+  selector: '[can]',
+  standalone: true,
 })
 export class CanDirective implements DoCheck {
   @Input()
@@ -19,19 +21,17 @@ export class CanDirective implements DoCheck {
   @Input()
   canElse: TemplateRef<void> | null = null;
 
+  private readonly ngAbilityService = inject(NgAbilityService);
+  private readonly templateRef = inject(TemplateRef<void>);
+  private readonly viewContainer = inject(ViewContainerRef);
+
   private embeddedView: EmbeddedViewRef<void> | null = null;
   private elseView: EmbeddedViewRef<void> | null = null;
-
-  constructor(
-    private readonly ngAbilityService: NgAbilityService,
-    private readonly templateRef: TemplateRef<void>,
-    private readonly viewContainer: ViewContainerRef
-  ) {}
 
   ngDoCheck(): void {
     if (
       this.can != null &&
-      this.ngAbilityService.can.apply(this.ngAbilityService, this.can) === true
+      (this.ngAbilityService.can as (...args: any[]) => boolean).apply(this.ngAbilityService, this.can) === true
     ) {
       if (this.elseView !== null) {
         this.elseView.destroy();
