@@ -1,0 +1,57 @@
+name: Create Release
+
+on:
+  workflow_run:
+    workflows: ["Test"]
+    types:
+      - completed
+    branches:
+      - main
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: 'Release type'
+        required: true
+        type: choice
+        options:
+          - auto
+          - patch
+          - minor
+          - major
+        default: auto
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - run: npm ci
+
+      - name: Configure git
+        run: |
+          git config user.name "Winston"
+          git config user.email "winston@helferherz.ch"
+
+      - name: Create release
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.release-type }}" != "auto" ]; then
+            npx commit-and-tag-version --release-as ${{ inputs.release-type }}
+          else
+            npx commit-and-tag-version
+          fi
+
+      - name: Push changes and tag
+        run: |
+          git push --follow-tags origin main

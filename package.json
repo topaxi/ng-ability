@@ -6,7 +6,8 @@
     "ng": "ng",
     "build": "ng build",
     "test": "ng test",
-    "package": "ng build ng-ability && cd dist/ng-ability && npm pack"
+    "package": "ng build ng-ability && cd dist/ng-ability && npm pack",
+    "release": "commit-and-tag-version"
   },
   "private": true,
   "packageManager": "npm@11.5.2",
@@ -23,6 +24,7 @@
     "@angular/cli": "^21.1.3",
     "@angular/compiler-cli": "^21.1.0",
     "@vitest/coverage-v8": "4.0.18",
+    "commit-and-tag-version": "^12.0.0",
     "jsdom": "^27.1.0",
     "ng-packagr": "^21.1.0",
     "typescript": "~5.9.2",
