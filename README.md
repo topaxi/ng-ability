@@ -15,16 +15,27 @@ npm install --save ng-ability
 The ability context provides the current user (or other subject) to your ability checks:
 
 ```typescript
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop'
 import { AbilityContext } from 'ng-ability';
 
 @Injectable({ providedIn: 'root' })
 export class AbilityUserContext implements AbilityContext<User> {
-  constructor(private readonly auth: AuthService) {}
+  readonly #auth = inject(AuthService);
 
-  getAbilityContext(): User | null {
-    return this.auth.getCurrentUser();
-  }
+  readonly abilityContext = toSignal(this.#auth.getCurrentUser());
+}
+```
+
+If your auth service uses signals, you can directly use them:
+
+```typescript
+@Injectable({ providedIn: 'root' })
+export class AbilityUserContext implements AbilityContext<User> {
+  readonly #auth = inject(AuthService);
+
+  // If auth.currentUser is already a Signal<User | null>
+  readonly abilityContext = this.#auth.currentUser;
 }
 ```
 
@@ -139,7 +150,7 @@ Alternatively, you can use the `*can` structural directive (import `CanDirective
 <div *can="['Article', 'create']">
   I can create new articles!
 </div>
-<div *can="[latestArticle, 'edit']; else noteditable">
+<div *can="['Article', 'edit', latestArticle]; else noteditable">
   <button (click)="editArticle(latestArticle)">Edit latest article</button>
 </div>
 <ng-template #noteditable>
@@ -155,11 +166,26 @@ import { NgAbilityService } from 'ng-ability';
 
 @Component({ ... })
 export class AppComponent {
-  private readonly ability = inject(NgAbilityService);
+  readonly #ability = inject(NgAbilityService);
 
   editArticle(article: Article) {
-    if (this.ability.can(article, 'edit')) {
+    // When the entity can be inferred (e.g., via instanceof)
+    if (this.#ability.can(article, 'edit')) {
       // edit article...
+    }
+  }
+
+  createNewArticle() {
+    // When checking a string matcher without an entity
+    if (this.#ability.can('Article', 'create')) {
+      // create article...
+    }
+  }
+
+  editDraftArticle(draftArticle: unknown) {
+    // When explicit matcher is needed
+    if (this.#ability.can('Article', 'edit', draftArticle)) {
+      // edit draft article...
     }
   }
 }
