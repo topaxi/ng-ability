@@ -5,7 +5,8 @@
     "entryFile": "src/public-api.ts"
   },
   "assets": [
-    "../../README.md",
-    "../../LICENSE"
+    "CHANGELOG.md",
+    "LICENSE",
+    "README.md"
   ]
 }
