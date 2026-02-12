@@ -1,0 +1,14 @@
+{
+  "packageFiles": [
+    {
+      "filename": "projects/ng-ability/package.json",
+      "type": "json"
+    }
+  ],
+  "bumpFiles": [
+    {
+      "filename": "projects/ng-ability/package.json",
+      "type": "json"
+    }
+  ]
+}

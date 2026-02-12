@@ -1,30 +1,79 @@
-import { NgModule } from '@angular/core';
-import { AbilityContext, Ability } from './interfaces';
-import { ABILITY, ABILITY_CONTEXT } from './ng-ability.service';
+import {
+  EnvironmentProviders,
+  makeEnvironmentProviders,
+  NgModule,
+  Provider,
+} from '@angular/core';
+import { Ability, AbilityContext } from './interfaces';
+import { ABILITY, ABILITY_CONTEXT } from './ng-ability.tokens';
 import { CanDirective } from './can.directive';
+import { CanPipe } from './can.pipe';
 
-export function abilityToProvider(abilityClass) {
-  return {
-    provide: ABILITY,
-    useClass: abilityClass,
-    multi: true
-  };
+function abilityToProvider(ability: {
+  new (...args: unknown[]): Ability<unknown, unknown>;
+}): Provider {
+  return { provide: ABILITY, useClass: ability, multi: true };
 }
 
+export function provideAbilities(
+  abilities: { new (...args: unknown[]): Ability<unknown, unknown> }[],
+): EnvironmentProviders;
+export function provideAbilities(
+  contextClass: { new (...args: unknown[]): AbilityContext<unknown> },
+  abilities: { new (...args: unknown[]): Ability<unknown, unknown> }[],
+): EnvironmentProviders;
+export function provideAbilities(
+  contextClassOrAbilities:
+    | { new (...args: unknown[]): AbilityContext<unknown> }
+    | { new (...args: unknown[]): Ability<unknown, unknown> }[],
+  abilities?: { new (...args: unknown[]): Ability<unknown, unknown> }[],
+): EnvironmentProviders {
+  if (Array.isArray(contextClassOrAbilities)) {
+    return makeEnvironmentProviders(
+      contextClassOrAbilities.map(abilityToProvider),
+    );
+  }
+
+  return makeEnvironmentProviders([
+    { provide: ABILITY_CONTEXT, useClass: contextClassOrAbilities },
+    ...abilities!.map(abilityToProvider),
+  ]);
+}
+
+/**
+ * @deprecated Use `provideAbilities()` for configuration and import `CanDirective`/`CanPipe` directly in your components.
+ */
 @NgModule({
-  declarations: [CanDirective],
-  exports: [CanDirective]
+  imports: [CanDirective, CanPipe],
+  exports: [CanDirective, CanPipe],
 })
 export class NgAbilityModule {
   static withAbilities(
-    contextClass: { new (): AbilityContext<any> },
-    abilities: { new (): Ability<any, any> }[]
+    abilities: { new (...args: unknown[]): Ability<unknown, unknown> }[],
+  ): { ngModule: typeof NgAbilityModule; providers: any[] };
+  static withAbilities(
+    contextClass: { new (...args: unknown[]): AbilityContext<unknown> },
+    abilities: { new (...args: unknown[]): Ability<unknown, unknown> }[],
+  ): { ngModule: typeof NgAbilityModule; providers: any[] };
+  static withAbilities(
+    contextClassOrAbilities:
+      | { new (...args: unknown[]): AbilityContext<unknown> }
+      | { new (...args: unknown[]): Ability<unknown, unknown> }[],
+    abilities?: { new (...args: unknown[]): Ability<unknown, unknown> }[],
   ) {
+    if (Array.isArray(contextClassOrAbilities)) {
+      return {
+        ngModule: NgAbilityModule,
+        providers: contextClassOrAbilities.map(abilityToProvider),
+      };
+    }
+
     return {
       ngModule: NgAbilityModule,
-      providers: abilities
-        .map(abilityToProvider)
-        .concat({ provide: ABILITY_CONTEXT, useClass: contextClass } as any)
+      providers: [
+        { provide: ABILITY_CONTEXT, useClass: contextClassOrAbilities },
+        ...abilities!.map(abilityToProvider),
+      ],
     };
   }
 }

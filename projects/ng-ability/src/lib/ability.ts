@@ -1,10 +1,18 @@
-import 'reflect-metadata';
 import { AbilityMatcher } from './interfaces';
 
-export function AbilityFor<T>(...abilityMatchers: AbilityMatcher<T>[]): any {
-  return klass => {
-    Reflect.defineMetadata('abilityMatchers', abilityMatchers, klass);
+const abilityMatchersMap = new WeakMap<Function, AbilityMatcher<unknown>[]>();
 
+export function getAbilityMatchers(
+  klass: Function,
+): AbilityMatcher<unknown>[] | undefined {
+  return abilityMatchersMap.get(klass);
+}
+
+export function AbilityFor<T>(
+  ...abilityMatchers: AbilityMatcher<T>[]
+): ClassDecorator {
+  return <TFunction extends Function>(klass: TFunction) => {
+    abilityMatchersMap.set(klass, abilityMatchers as AbilityMatcher<unknown>[]);
     return klass;
   };
 }

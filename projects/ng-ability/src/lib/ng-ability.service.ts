@@ -1,67 +1,87 @@
-import 'reflect-metadata';
-import { Injectable, InjectionToken, Injector } from '@angular/core';
-import { Ability, AbilityMatcher, AbilityContext } from './interfaces';
+import { inject, Injectable } from '@angular/core';
+import {
+  type AbilityActions,
+  type AbilityActionsOf,
+  type AbilityActionFor,
+  type Ability,
+  type AbilityMatcher,
+} from './interfaces';
+import { getAbilityMatchers } from './ability';
+import { ABILITY, ABILITY_CONTEXT } from './ng-ability.tokens';
 
-export const ABILITY_CONTEXT = new InjectionToken<AbilityContext<any>>(
-  'AbilityContext'
-);
-export const ABILITY = new InjectionToken<Ability<any, any>[]>('Ability');
-
-const nullContext: AbilityContext<null> = { getAbilityContext: () => null };
-const inability: Ability<any, any> = { can: () => false };
+const inability: Ability<unknown, unknown> = { can: () => false };
 
 @Injectable({ providedIn: 'root' })
 export class NgAbilityService {
-  private get context() {
-    return this.injector.get(ABILITY_CONTEXT, nullContext).getAbilityContext();
-  }
+  private readonly context = inject(ABILITY_CONTEXT);
+  private readonly abilities = inject(ABILITY);
 
-  private get abilities() {
-    return this.injector.get(ABILITY, []);
-  }
-
-  constructor(private readonly injector: Injector) {}
-
-  can(action: string, thing: any): boolean;
-  can(action: string, matcher: AbilityMatcher<any>, thing: any): boolean;
-  can(action: string, matcher: any, thing?: any): boolean {
+  can<M extends keyof AbilityActions>(
+    matcher: M,
+    action: AbilityActions[NoInfer<M>],
+    thing?: unknown,
+  ): boolean;
+  can<K extends keyof AbilityActions>(
+    matcher: new (...args: never[]) => AbilityActionsOf<K>,
+    action: AbilityActions[NoInfer<K>],
+    thing?: unknown,
+  ): boolean;
+  can<M>(matcher: M, action: AbilityActionFor<NoInfer<M>>): boolean;
+  can<T, M extends AbilityMatcher<T>>(
+    matcher: M,
+    action: AbilityActionFor<NoInfer<M>>,
+    thing: T,
+  ): boolean;
+  can(matcherOrThing: unknown, action: string, thing?: unknown): boolean {
     if (arguments.length === 2) {
-      thing = matcher;
+      thing = matcherOrThing;
     }
 
-    return Boolean(this.getAbility(matcher).can(this.context, action, thing));
+    return Boolean(
+      this.getAbility(matcherOrThing).can(
+        this.context.abilityContext(),
+        action,
+        thing,
+      ),
+    );
   }
 
-  private getAbility(thing: any): Ability<any, any> {
+  private getAbility(thing: unknown): Ability<unknown, unknown> {
     return (
-      this.abilities.find(ability => {
-        const matchers: AbilityMatcher<any>[] = Reflect.getMetadata(
-          'abilityMatchers',
-          ability.constructor
-        );
+      this.abilities.find((ability) => {
+        const matchers = getAbilityMatchers(ability.constructor);
 
         if (!Array.isArray(matchers) || matchers.length === 0) {
           console.error(`Unable to match ability without matcher`, ability);
           return false;
         }
 
-        return matchers.some(matcher => this.matchAbility(matcher, thing));
-      }) || inability
+        return matchers.some((matcher) => this.matchAbility(matcher, thing));
+      }) ?? inability
     );
   }
 
-  private matchAbility(matcher: AbilityMatcher<any>, thing: any): boolean {
+  private matchAbility(
+    matcher: AbilityMatcher<unknown>,
+    thing: unknown,
+  ): boolean {
     if (matcher === thing) {
       return true;
     }
 
     if (typeof matcher === 'function') {
-      if (thing instanceof matcher) {
-        return true;
+      try {
+        if (thing instanceof matcher) {
+          return true;
+        }
+      } catch (e) {
+        // Arrow functions don't have prototype, instanceof will throw
       }
 
       try {
-        return (matcher as any)(thing) === true;
+        // In case a class is passed, it might throw, therefore we try/catch
+        // and cast the value to a function.
+        return (matcher as (thing: unknown) => boolean)(thing) === true;
       } catch (e) {
         return false;
       }
