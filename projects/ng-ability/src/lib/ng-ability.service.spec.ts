@@ -229,7 +229,7 @@ describe('NgAbilityService', () => {
 describe('NgAbilityService type tests', () => {
   describe('AbilityActions declaration merging', () => {
     it('should include merged matcher keys', () => {
-      expectTypeOf<'Post' | 'Comment' | 'Settings'>().toMatchTypeOf<
+      expectTypeOf<'Post' | 'Comment' | 'Settings'>().toExtend<
         keyof AbilityActions
       >();
     });
@@ -403,10 +403,8 @@ describe('NgAbilityService type tests', () => {
       class PostEntity implements AbilityActionsOf<'Post'> {}
       class CommentEntity implements AbilityActionsOf<'Comment'> {}
 
-      expectTypeOf<PostEntity>().toMatchTypeOf<AbilityActionsOf<'Post'>>();
-      expectTypeOf<CommentEntity>().toMatchTypeOf<
-        AbilityActionsOf<'Comment'>
-      >();
+      expectTypeOf<PostEntity>().toExtend<AbilityActionsOf<'Post'>>();
+      expectTypeOf<CommentEntity>().toExtend<AbilityActionsOf<'Comment'>>();
     });
 
     it('should preserve the branded key type', () => {
@@ -420,18 +418,18 @@ describe('NgAbilityService type tests', () => {
 
   describe('AbilityMatcher type', () => {
     it('should accept string matchers', () => {
-      expectTypeOf<'Post'>().toMatchTypeOf<AbilityMatcher<unknown>>();
-      expectTypeOf<'Custom'>().toMatchTypeOf<AbilityMatcher<unknown>>();
+      expectTypeOf<'Post'>().toExtend<AbilityMatcher<unknown>>();
+      expectTypeOf<'Custom'>().toExtend<AbilityMatcher<unknown>>();
     });
 
     it('should accept class constructors', () => {
       class Model {}
-      expectTypeOf<typeof Model>().toMatchTypeOf<AbilityMatcher<Model>>();
+      expectTypeOf<typeof Model>().toExtend<AbilityMatcher<Model>>();
     });
 
     it('should accept predicate functions', () => {
       const predicate = (obj: { type: string }) => obj.type === 'post';
-      expectTypeOf<typeof predicate>().toMatchTypeOf<
+      expectTypeOf<typeof predicate>().toExtend<
         AbilityMatcher<{ type: string }>
       >();
     });

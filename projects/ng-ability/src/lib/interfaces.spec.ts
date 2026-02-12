@@ -16,9 +16,7 @@ declare module './interfaces' {
 
 describe('AbilityActions declaration merging', () => {
   it('should include merged matcher keys', () => {
-    expectTypeOf<'Article' | 'AdminArea'>().toMatchTypeOf<
-      keyof AbilityActions
-    >();
+    expectTypeOf<'Article' | 'AdminArea'>().toExtend<keyof AbilityActions>();
   });
 
   it('should map matcher to its declared actions', () => {
@@ -55,32 +53,30 @@ describe('AbilityActionsOf interface', () => {
     class ArticleModel implements AbilityActionsOf<'Article'> {}
 
     // Should satisfy the type without requiring any properties
-    expectTypeOf<ArticleModel>().toMatchTypeOf<AbilityActionsOf<'Article'>>();
+    expectTypeOf<ArticleModel>().toExtend<AbilityActionsOf<'Article'>>();
   });
 
   it('should allow multiple classes to implement same AbilityActionsOf', () => {
     class ArticleModel implements AbilityActionsOf<'Article'> {}
     class ArticleDTO implements AbilityActionsOf<'Article'> {}
 
-    expectTypeOf<ArticleModel>().toMatchTypeOf<AbilityActionsOf<'Article'>>();
-    expectTypeOf<ArticleDTO>().toMatchTypeOf<AbilityActionsOf<'Article'>>();
+    expectTypeOf<ArticleModel>().toExtend<AbilityActionsOf<'Article'>>();
+    expectTypeOf<ArticleDTO>().toExtend<AbilityActionsOf<'Article'>>();
   });
 
   it('should support different keys for different classes', () => {
     class ArticleModel implements AbilityActionsOf<'Article'> {}
     class AdminAreaModel implements AbilityActionsOf<'AdminArea'> {}
 
-    expectTypeOf<ArticleModel>().toMatchTypeOf<AbilityActionsOf<'Article'>>();
-    expectTypeOf<AdminAreaModel>().toMatchTypeOf<
-      AbilityActionsOf<'AdminArea'>
-    >();
+    expectTypeOf<ArticleModel>().toExtend<AbilityActionsOf<'Article'>>();
+    expectTypeOf<AdminAreaModel>().toExtend<AbilityActionsOf<'AdminArea'>>();
   });
 
   it('should be compatible with class constructors', () => {
     class ArticleModel implements AbilityActionsOf<'Article'> {}
 
     // The class constructor should be usable as a matcher
-    expectTypeOf<typeof ArticleModel>().toMatchTypeOf<
+    expectTypeOf<typeof ArticleModel>().toExtend<
       new () => AbilityActionsOf<'Article'>
     >();
   });
