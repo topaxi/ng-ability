@@ -18,12 +18,12 @@ export class NgAbilityService {
 
   can<M extends keyof AbilityActions>(
     matcher: M,
-    action: AbilityActions[M],
+    action: AbilityActions[NoInfer<M>],
     thing?: unknown,
   ): boolean;
   can<K extends keyof AbilityActions>(
     matcher: new (...args: never[]) => AbilityActionsOf<K>,
-    action: AbilityActions[K],
+    action: AbilityActions[NoInfer<K>],
     thing?: unknown,
   ): boolean;
   can<M>(matcher: M, action: AbilityActionFor<NoInfer<M>>): boolean;
