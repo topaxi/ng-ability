@@ -22,4 +22,4 @@ jobs:
       - run: npm ci
       - run: npm test
       - run: npm run package
-      - run: npm publish dist/ng-ability/*.tgz --provenance --access public
+      - run: npm publish dist/ng-ability/*.tgz --access public
