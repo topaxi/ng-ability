@@ -1,6 +1,7 @@
 {
   "name": "ng-ability",
   "version": "2.0.0",
+  "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/topaxi/ng-ability"
