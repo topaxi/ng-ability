@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.1.0](https://github.com/topaxi/ng-ability/compare/v2.0.1...v2.1.0) (2026-02-12)
+
+
+### Features
+
+* add global abilities with type-safe enforcement ([d773d3a](https://github.com/topaxi/ng-ability/commit/d773d3a53de81e58aacb5ad17a1a567a96ec9e2a))
+
 ## [2.0.1](https://github.com/topaxi/ng-ability/compare/v2.0.0...v2.0.1) (2026-02-12)
 
 ## [2.0.0](https://github.com/topaxi/ng-ability/compare/v0.1.2...v2.0.0) (2026-02-12)
