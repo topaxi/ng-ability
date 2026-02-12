@@ -6,7 +6,7 @@ import {
   type Ability,
   type AbilityMatcher,
 } from './interfaces';
-import { getAbilityMatchers } from './ability';
+import { getAbilityMatchers, isGlobalAbility } from './ability';
 import { ABILITY, ABILITY_CONTEXT } from './ng-ability.tokens';
 
 const inability: Ability<unknown, unknown> = { can: () => false };
@@ -37,27 +37,37 @@ export class NgAbilityService {
       thing = matcherOrThing;
     }
 
+    const currentContext = this.context.abilityContext();
+
+    // Check all global abilities first - all must return true
+    for (const ability of this.abilities) {
+      if (isGlobalAbility(ability.constructor)) {
+        if (!ability.can(currentContext, action, thing)) {
+          return false;
+        }
+      }
+    }
+
+    // If all global abilities passed (or there are none), check specific ability
     return Boolean(
-      this.getAbility(matcherOrThing).can(
-        this.context.abilityContext(),
-        action,
-        thing,
-      ),
+      this.getAbility(matcherOrThing).can(currentContext, action, thing),
     );
   }
 
   private getAbility(thing: unknown): Ability<unknown, unknown> {
     return (
-      this.abilities.find((ability) => {
-        const matchers = getAbilityMatchers(ability.constructor);
+      this.abilities
+        .filter((ability) => !isGlobalAbility(ability.constructor))
+        .find((ability) => {
+          const matchers = getAbilityMatchers(ability.constructor);
 
-        if (!Array.isArray(matchers) || matchers.length === 0) {
-          console.error(`Unable to match ability without matcher`, ability);
-          return false;
-        }
+          if (!Array.isArray(matchers) || matchers.length === 0) {
+            console.error(`Unable to match ability without matcher`, ability);
+            return false;
+          }
 
-        return matchers.some((matcher) => this.matchAbility(matcher, thing));
-      }) ?? inability
+          return matchers.some((matcher) => this.matchAbility(matcher, thing));
+        }) ?? inability
     );
   }
 

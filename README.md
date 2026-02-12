@@ -274,6 +274,81 @@ This is especially useful when:
 - You want to prevent mistakes like checking `ability.can(User, 'edit')` when `User` only supports `'view'`
 - You're passing class constructors instead of string matchers
 
+### 6. Global abilities (optional)
+
+Global abilities are special abilities that act as gatekeepers for your permission
+system. They are checked **before** any specific abilities, and **all** global
+abilities must return `true` for the permission check to proceed.
+
+**When to use global abilities:**
+
+- Enforce read-only mode across your entire application
+- Implement maintenance mode restrictions
+- Check license or feature flags
+- Verify user status (banned, suspended, etc.)
+- Multi-tenant isolation checks
+
+**Example:**
+
+```typescript
+import { AbilityFor, Ability, GlobalAbility } from 'ng-ability';
+
+// Global ability to enforce read-only mode
+@AbilityFor(GlobalAbility)
+export class ReadOnlyModeAbility implements Ability<User> {
+  can(currentUser: User | null, action: string): boolean {
+    // Block all write operations when user is in read-only mode
+    if (currentUser?.readOnly && action !== 'read') {
+      return false;
+    }
+    // Allow the check to continue to specific abilities
+    return true;
+  }
+}
+
+// Regular ability
+@AbilityFor('Article')
+export class ArticleAbility implements Ability<User> {
+  can(currentUser: User | null, action: string): boolean {
+    // This will only be checked if all global abilities return true
+    return currentUser != null;
+  }
+}
+```
+
+Register global abilities like any other ability:
+
+```typescript
+bootstrapApplication(AppComponent, {
+  providers: [
+    provideAbilities(AbilityUserContext, [
+      ReadOnlyModeAbility,  // Global ability
+      ArticleAbility,       // Regular abilities
+      // ... other abilities
+    ]),
+  ],
+});
+```
+
+**Type safety:**
+
+The type system enforces that abilities are either global OR specific:
+
+```typescript
+// ✓ Valid
+@AbilityFor(GlobalAbility)
+export class GlobalCheck implements Ability<User> { ... }
+
+// ✗ Invalid: Cannot mix GlobalAbility with matchers
+@AbilityFor(GlobalAbility, 'Article')  // TypeScript error!
+```
+
+**How it works:**
+
+1. When you call `can('Article', 'write')`, all global abilities are checked first
+2. If any global ability returns `false`, the check fails immediately
+3. Only if all global abilities return `true` does the check proceed to `ArticleAbility`
+
 ## Development
 
 ### Build
