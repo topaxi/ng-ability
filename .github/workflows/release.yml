@@ -30,18 +30,45 @@ jobs:
           fetch-depth: 0
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
+      - name: Check for changes in ng-ability
+        id: check-changes
+        run: |
+          # Get the latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+
+          if [ -z "$LATEST_TAG" ]; then
+            echo "No previous tag found, proceeding with release"
+            echo "has-changes=true" >> $GITHUB_OUTPUT
+          else
+            # Check if there are changes in projects/ng-ability since the last tag
+            CHANGES=$(git diff --name-only $LATEST_TAG HEAD -- projects/ng-ability)
+
+            if [ -n "$CHANGES" ]; then
+              echo "Changes detected in projects/ng-ability:"
+              echo "$CHANGES"
+              echo "has-changes=true" >> $GITHUB_OUTPUT
+            else
+              echo "No changes in projects/ng-ability since $LATEST_TAG"
+              echo "has-changes=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
       - uses: actions/setup-node@v4
+        if: steps.check-changes.outputs.has-changes == 'true'
         with:
           node-version: '24'
 
       - run: npm ci
+        if: steps.check-changes.outputs.has-changes == 'true'
 
       - name: Configure git
+        if: steps.check-changes.outputs.has-changes == 'true'
         run: |
           git config user.name "Winston"
           git config user.email "winston@helferherz.ch"
 
       - name: Create release
+        if: steps.check-changes.outputs.has-changes == 'true'
         run: |
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.release-type }}" != "auto" ]; then
             npx commit-and-tag-version --release-as ${{ inputs.release-type }}
@@ -50,5 +77,6 @@ jobs:
           fi
 
       - name: Push changes and tag
+        if: steps.check-changes.outputs.has-changes == 'true'
         run: |
           git push --follow-tags origin main
