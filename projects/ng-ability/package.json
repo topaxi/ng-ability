@@ -1,6 +1,10 @@
 {
   "name": "ng-ability",
   "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/topaxi/ng-ability"
+  },
   "peerDependencies": {
     "@angular/common": "^21.0.0",
     "@angular/core": "^21.0.0",
