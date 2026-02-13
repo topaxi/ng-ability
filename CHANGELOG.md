@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.2.0](https://github.com/topaxi/ng-ability/compare/v2.1.0...v2.2.0) (2026-02-13)
+
+
+### Features
+
+* route guards ([3eec8c5](https://github.com/topaxi/ng-ability/commit/3eec8c5d7bff3996e1f346e6abd5f0eaed1c79fe))
+
 ## [2.1.0](https://github.com/topaxi/ng-ability/compare/v2.0.1...v2.1.0) (2026-02-12)
 
 
