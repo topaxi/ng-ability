@@ -29,6 +29,10 @@ yarn-error.log
 !.vscode/mcp.json
 .history/*
 
+# VitePress
+docs/.vitepress/dist
+docs/.vitepress/cache
+
 # Miscellaneous
 /.angular/cache
 .sass-cache/

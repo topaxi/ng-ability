@@ -8,7 +8,10 @@
     "build": "ng build",
     "test": "ng test",
     "package": "ng build ng-ability && cd dist/ng-ability && npm pack",
-    "release": "commit-and-tag-version"
+    "release": "commit-and-tag-version",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   },
   "private": true,
   "packageManager": "npm@11.5.2",
@@ -30,6 +33,7 @@
     "jsdom": "^27.1.0",
     "ng-packagr": "^21.1.0",
     "typescript": "~5.9.2",
+    "vitepress": "^1.6.0",
     "vitest": "^4.0.8"
   }
 }
