@@ -129,3 +129,5 @@ export class AppComponent {
 - [Type Safety](./type-safety) — declare actions and link classes to their allowed actions
 - [Global Abilities](./global-abilities) — cross-cutting permission checks
 - [Route Guards](./route-guards) — protecting routes with ability-based guards
+- [Testing](./testing) — unit and integration testing patterns for abilities
+- [Recipes](./recipes) — RBAC, GraphQL, multi-tenant, and more real-world examples

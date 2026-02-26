@@ -93,6 +93,10 @@ export class ArticleAbility implements Ability<User, Article> { ... }
 
 Useful for GraphQL responses and other data without a class hierarchy.
 
+::: tip GraphQL recipe
+See the [GraphQL Integration](./recipes#graphql-integration) recipe for a reusable `gqlMatcher()` factory and combined string + function matcher patterns.
+:::
+
 #### Multiple matchers
 
 You can combine matchers on a single ability class:
@@ -181,6 +185,10 @@ You can also call `provideAbilities()` without a context class if the context is
 ```typescript
 provideAbilities([ArticleAbility, AdminAreaAbility])
 ```
+
+::: tip Feature modules
+You can call `provideAbilities()` in lazy-loaded route providers to add abilities scoped to a feature. See the [Feature Modules](./recipes#feature-modules) recipe for a full example.
+:::
 
 ### NgModule (deprecated)
 

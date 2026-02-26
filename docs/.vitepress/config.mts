@@ -55,6 +55,8 @@ export default defineConfig({
           items: [
             { text: 'Global Abilities', link: '/guide/global-abilities' },
             { text: 'Route Guards', link: '/guide/route-guards' },
+            { text: 'Testing', link: '/guide/testing' },
+            { text: 'Recipes', link: '/guide/recipes' },
           ],
         },
       ],

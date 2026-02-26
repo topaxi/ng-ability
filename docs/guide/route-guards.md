@@ -248,3 +248,7 @@ export const appConfig: ApplicationConfig = {
   ],
 }
 ```
+
+## Testing
+
+For patterns on testing route guards — including `TestBed.runInInjectionContext`, thing resolver testing, and context transitions — see the [Testing Guide](./testing#testing-route-guards).

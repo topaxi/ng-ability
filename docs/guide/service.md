@@ -137,3 +137,7 @@ export class ArticleListComponent {
 ::: tip Prefer template checks
 For UI visibility toggles, prefer using the `can` pipe or `*can` directive in templates — they're more idiomatic Angular and automatically reactive. Use `NgAbilityService` in code when you need to guard logic, not just UI.
 :::
+
+::: tip Reactive lists recipe
+See the [Reactive Filtered Lists](./recipes#reactive-filtered-lists) recipe for a permission map pattern that computes per-item permissions once for bulk UI rendering.
+:::

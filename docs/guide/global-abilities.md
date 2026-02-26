@@ -185,6 +185,10 @@ export class TenantAccessAbility implements Ability<TenantUser> {
 }
 ```
 
+::: tip Multi-tenant recipe
+See the [Multi-Tenant Isolation](./recipes#multi-tenant-isolation) recipe for a complete example combining a tenant gatekeeper global ability with resource-specific abilities.
+:::
+
 ## Best Practices
 
 1. **Keep global abilities simple** — they run on every `can()` call; keep them fast and focused.
