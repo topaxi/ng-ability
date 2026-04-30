@@ -12,6 +12,14 @@ export {
   canActivateAbility,
   canActivateChildAbility,
   canMatchAbility,
+  throwAbilityUnauthorizedHandler,
+  cancelAbilityUnauthorizedHandler,
+  redirectAbilityUnauthorizedHandler,
   type AbilityThingResolver,
 } from './lib/ability.guard';
+export { NgAbilityError, AbilityGuardUnauthorizedError } from './lib/ability.guard.error';
 export { NgAbilityModule, provideAbilities } from './lib/ng-ability.module';
+export {
+  ABILITY_UNAUTHORIZED_HANDLER,
+  type AbilityGuardUnauthorizedHandler,
+} from './lib/ng-ability.tokens';

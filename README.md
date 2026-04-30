@@ -349,6 +349,29 @@ export class GlobalCheck implements Ability<User> { ... }
 2. If any global ability returns `false`, the check fails immediately
 3. Only if all global abilities return `true` does the check proceed to `ArticleAbility`
 
+### 7. Route guards
+
+Protect routes using ability-based guards:
+
+```typescript
+import { canActivateAbility, canActivateChildAbility, canMatchAbility } from 'ng-ability'
+
+const routes: Routes = [
+  { path: 'articles', canActivate: [canActivateAbility('Article', 'read')], component: ArticlesComponent },
+  { path: 'admin', canMatch: [canMatchAbility('Admin', 'access')], component: AdminComponent },
+]
+```
+
+When a `canActivate`/`canActivateChild` check fails, an `AbilityGuardUnauthorizedError` is thrown by default, which propagates to Angular's navigation error handler. Override `ABILITY_UNAUTHORIZED_HANDLER` globally or per route subtree to redirect instead:
+
+```typescript
+import { ABILITY_UNAUTHORIZED_HANDLER, redirectAbilityUnauthorizedHandler } from 'ng-ability'
+
+{ provide: ABILITY_UNAUTHORIZED_HANDLER, useValue: redirectAbilityUnauthorizedHandler('/error/403') }
+```
+
+See the [Route Guards guide](https://topaxi.github.io/ng-ability/guide/route-guards) for full details.
+
 ## Development
 
 ### Build

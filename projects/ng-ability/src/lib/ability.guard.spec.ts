@@ -1,5 +1,6 @@
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
+import { RedirectCommand } from '@angular/router';
 import type {
   ActivatedRouteSnapshot,
   Route,
@@ -12,9 +13,13 @@ import {
   canActivateAbility,
   canActivateChildAbility,
   canMatchAbility,
+  cancelAbilityUnauthorizedHandler,
+  redirectAbilityUnauthorizedHandler,
+  throwAbilityUnauthorizedHandler,
 } from './ability.guard';
+import { AbilityGuardUnauthorizedError } from './ability.guard.error';
 import type { Ability } from './interfaces';
-import { ABILITY, ABILITY_CONTEXT } from './ng-ability.tokens';
+import { ABILITY, ABILITY_CONTEXT, ABILITY_UNAUTHORIZED_HANDLER } from './ng-ability.tokens';
 
 declare module './interfaces' {
   interface AbilityActions {
@@ -65,15 +70,14 @@ describe('canActivateAbility', () => {
     expect(documentAbility.can).toHaveBeenCalledWith(null, 'view', 'Document');
   });
 
-  it('should prevent activation when ability check fails', () => {
+  it('should throw AbilityGuardUnauthorizedError when ability check fails', () => {
     (documentAbility.can as ReturnType<typeof vi.fn>).mockReturnValue(false);
 
     const guard = canActivateAbility('Document', 'edit');
-    const result = TestBed.runInInjectionContext(() =>
-      guard(mockRoute, mockState),
-    );
 
-    expect(result).toBe(false);
+    expect(() =>
+      TestBed.runInInjectionContext(() => guard(mockRoute, mockState)),
+    ).toThrow(AbilityGuardUnauthorizedError);
     expect(documentAbility.can).toHaveBeenCalledWith(null, 'edit', 'Document');
   });
 
@@ -150,6 +154,10 @@ describe('canActivateAbility', () => {
   });
 
   it('should create independent guards for different abilities', () => {
+    TestBed.overrideProvider(ABILITY_UNAUTHORIZED_HANDLER, {
+      useValue: cancelAbilityUnauthorizedHandler,
+    });
+
     const guardView = canActivateAbility('Document', 'view');
     const guardEdit = canActivateAbility('Document', 'edit');
 
@@ -205,6 +213,10 @@ describe('canActivateAbility', () => {
   });
 
   it('should pass route and state to thing resolver', () => {
+    TestBed.overrideProvider(ABILITY_UNAUTHORIZED_HANDLER, {
+      useValue: cancelAbilityUnauthorizedHandler,
+    });
+
     const thingResolver = vi.fn().mockReturnValue('resolved-thing');
 
     const guard = canActivateAbility('Document', 'view', thingResolver);
@@ -248,15 +260,14 @@ describe('canActivateChildAbility', () => {
     expect(documentAbility.can).toHaveBeenCalledWith(null, 'view', 'Document');
   });
 
-  it('should prevent child activation when ability check fails', () => {
+  it('should throw AbilityGuardUnauthorizedError when ability check fails', () => {
     (documentAbility.can as ReturnType<typeof vi.fn>).mockReturnValue(false);
 
     const guard = canActivateChildAbility('Document', 'edit');
-    const result = TestBed.runInInjectionContext(() =>
-      guard(mockRoute, mockState),
-    );
 
-    expect(result).toBe(false);
+    expect(() =>
+      TestBed.runInInjectionContext(() => guard(mockRoute, mockState)),
+    ).toThrow(AbilityGuardUnauthorizedError);
     expect(documentAbility.can).toHaveBeenCalledWith(null, 'edit', 'Document');
   });
 
@@ -375,6 +386,74 @@ describe('canMatchAbility', () => {
       'view',
       mockDocument,
     );
+  });
+});
+
+describe('ABILITY_UNAUTHORIZED_HANDLER', () => {
+  let documentAbility: Ability<any, any>;
+  let mockRoute: ActivatedRouteSnapshot;
+  let mockState: RouterStateSnapshot;
+
+  beforeEach(() => {
+    @AbilityFor('Document')
+    class DocumentAbility {
+      can = vi.fn().mockReturnValue(false);
+    }
+    documentAbility = new DocumentAbility();
+
+    mockRoute = {} as ActivatedRouteSnapshot;
+    mockState = {} as RouterStateSnapshot;
+
+    TestBed.configureTestingModule({
+      providers: [
+        { provide: ABILITY, useFactory: () => documentAbility, multi: true },
+      ],
+    });
+  });
+
+  it('throws AbilityGuardUnauthorizedError by default', () => {
+    const guard = canActivateAbility('Document', 'view');
+
+    expect(() =>
+      TestBed.runInInjectionContext(() => guard(mockRoute, mockState)),
+    ).toThrow(AbilityGuardUnauthorizedError);
+  });
+
+  it('throwAbilityUnauthorizedHandler throws AbilityGuardUnauthorizedError', () => {
+    TestBed.overrideProvider(ABILITY_UNAUTHORIZED_HANDLER, {
+      useValue: throwAbilityUnauthorizedHandler,
+    });
+    const guard = canActivateAbility('Document', 'view');
+
+    expect(() =>
+      TestBed.runInInjectionContext(() => guard(mockRoute, mockState)),
+    ).toThrow(AbilityGuardUnauthorizedError);
+  });
+
+  it('cancelAbilityUnauthorizedHandler returns false', () => {
+    TestBed.overrideProvider(ABILITY_UNAUTHORIZED_HANDLER, {
+      useValue: cancelAbilityUnauthorizedHandler,
+    });
+    const guard = canActivateAbility('Document', 'view');
+
+    const result = TestBed.runInInjectionContext(() =>
+      guard(mockRoute, mockState),
+    );
+
+    expect(result).toBe(false);
+  });
+
+  it('redirectAbilityUnauthorizedHandler returns a RedirectCommand to the given url', () => {
+    TestBed.overrideProvider(ABILITY_UNAUTHORIZED_HANDLER, {
+      useValue: redirectAbilityUnauthorizedHandler('/error/403'),
+    });
+    const guard = canActivateAbility('Document', 'view');
+
+    const result = TestBed.runInInjectionContext(() =>
+      guard(mockRoute, mockState),
+    );
+
+    expect(result).toBeInstanceOf(RedirectCommand);
   });
 });
 

@@ -249,6 +249,106 @@ export const appConfig: ApplicationConfig = {
 }
 ```
 
+## Unauthorized Handler
+
+When `canActivateAbility` or `canActivateChildAbility` fails, instead of returning `false` (which causes Angular to cancel navigation silently and leave the user on a blank page), it calls the function registered under the `ABILITY_UNAUTHORIZED_HANDLER` injection token.
+
+> **`canMatchAbility` is not affected.** Returning `false` from `canMatch` is intentional — it tells the router to skip to the next matching route. Throwing or redirecting there would prevent that fallback behavior.
+
+### Default behavior — throw
+
+The default handler throws an `AbilityGuardUnauthorizedError` (a subclass of `NgAbilityError`), which propagates to Angular's [navigation error handler](https://angular.dev/api/router/withNavigationErrorHandler):
+
+```typescript
+import { withNavigationErrorHandler } from '@angular/router'
+import { NgAbilityError } from 'ng-ability'
+
+provideRouter(routes,
+  withNavigationErrorHandler((error) => {
+    if (error instanceof NgAbilityError) {
+      inject(Router).navigate(['/error/403'])
+    }
+  }),
+)
+```
+
+### Named handlers
+
+Three ready-made handlers are exported:
+
+| Handler | Behavior |
+|---|---|
+| `throwAbilityUnauthorizedHandler` | Throws `AbilityGuardUnauthorizedError` *(default)* |
+| `cancelAbilityUnauthorizedHandler` | Returns `false`, cancelling navigation silently |
+| `redirectAbilityUnauthorizedHandler(url)` | Redirects to the given URL |
+
+### Provide a handler globally
+
+```typescript
+import { ABILITY_UNAUTHORIZED_HANDLER, redirectAbilityUnauthorizedHandler } from 'ng-ability'
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    {
+      provide: ABILITY_UNAUTHORIZED_HANDLER,
+      useValue: redirectAbilityUnauthorizedHandler('/error/403'),
+    },
+  ],
+})
+```
+
+### Override per route subtree
+
+Because Angular resolves the token from the route's injector hierarchy, you can override it for a specific subtree via the route's `providers` array without touching the global config:
+
+```typescript
+import { ABILITY_UNAUTHORIZED_HANDLER, redirectAbilityUnauthorizedHandler } from 'ng-ability'
+
+const routes: Routes = [
+  {
+    path: '',
+    providers: [
+      {
+        provide: ABILITY_UNAUTHORIZED_HANDLER,
+        useValue: redirectAbilityUnauthorizedHandler('/error/403'),
+      },
+    ],
+    children: [
+      {
+        path: 'articles',
+        canActivate: [canActivateAbility('Article', 'read')],
+        component: ArticlesComponent,
+      },
+    ],
+  },
+]
+```
+
+### Restore pre-2.3 behavior
+
+If you need the old silent-cancel behavior, provide `cancelAbilityUnauthorizedHandler`:
+
+```typescript
+import { ABILITY_UNAUTHORIZED_HANDLER, cancelAbilityUnauthorizedHandler } from 'ng-ability'
+
+{ provide: ABILITY_UNAUTHORIZED_HANDLER, useValue: cancelAbilityUnauthorizedHandler }
+```
+
+### Custom handler
+
+Any function matching `(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) => MaybeAsync<GuardResult>` works:
+
+```typescript
+import { inject } from '@angular/core'
+import { Router } from '@angular/router'
+import { ABILITY_UNAUTHORIZED_HANDLER } from 'ng-ability'
+
+{
+  provide: ABILITY_UNAUTHORIZED_HANDLER,
+  useValue: () => inject(Router).createUrlTree(['/login']),
+}
+```
+
 ## Testing
 
 For patterns on testing route guards — including `TestBed.runInInjectionContext`, thing resolver testing, and context transitions — see the [Testing Guide](./testing#testing-route-guards).

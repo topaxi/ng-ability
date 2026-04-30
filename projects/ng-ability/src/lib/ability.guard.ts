@@ -4,11 +4,15 @@ import type {
   CanActivateChildFn,
   CanActivateFn,
   CanMatchFn,
+  GuardResult,
   MaybeAsync,
   Route,
   RouterStateSnapshot,
   UrlSegment,
 } from '@angular/router';
+import { RedirectCommand, Router } from '@angular/router';
+import { from, isObservable, of, type Observable } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import type {
   AbilityActions,
   AbilityActionsOf,
@@ -16,11 +20,57 @@ import type {
   AbilityMatcher,
 } from './interfaces';
 import { NgAbilityService } from './ng-ability.service';
+import {
+  ABILITY_UNAUTHORIZED_HANDLER,
+  type AbilityGuardUnauthorizedHandler,
+} from './ng-ability.tokens';
+import { AbilityGuardUnauthorizedError } from './ability.guard.error';
+
+/**
+ * The default unauthorized handler. Throws an {@link AbilityGuardUnauthorizedError},
+ * which propagates to Angular's navigation error handler.
+ */
+export const throwAbilityUnauthorizedHandler: AbilityGuardUnauthorizedHandler =
+  () => {
+    throw new AbilityGuardUnauthorizedError();
+  };
+
+/**
+ * An unauthorized handler that cancels navigation silently by returning `false`.
+ * This restores the pre-2.3 behavior for applications that need it.
+ */
+export const cancelAbilityUnauthorizedHandler: AbilityGuardUnauthorizedHandler =
+  () => false;
+
+/**
+ * Creates an unauthorized handler that redirects to the given URL.
+ *
+ * @example
+ * ```typescript
+ * providers: [
+ *   {
+ *     provide: ABILITY_UNAUTHORIZED_HANDLER,
+ *     useValue: redirectAbilityUnauthorizedHandler('/error/403'),
+ *   },
+ * ]
+ * ```
+ */
+export function redirectAbilityUnauthorizedHandler(
+  url: string,
+): AbilityGuardUnauthorizedHandler {
+  return () => new RedirectCommand(inject(Router).parseUrl(url));
+}
 
 export type AbilityThingResolver<T = unknown> = (
   route: ActivatedRouteSnapshot | Route,
   state: RouterStateSnapshot | UrlSegment[],
 ) => T;
+
+function intoObservable<T>(value: MaybeAsync<T>): Observable<T> {
+  if (isObservable(value)) return value;
+  if (value instanceof Promise) return from(value);
+  return of(value);
+}
 
 function abilityGuard(
   guard: (
@@ -31,8 +81,24 @@ function abilityGuard(
 ): (
   route: ActivatedRouteSnapshot | Route,
   state: RouterStateSnapshot | UrlSegment[],
-) => MaybeAsync<boolean> {
-  return (route, state) => guard(inject(NgAbilityService), route, state);
+) => MaybeAsync<GuardResult> {
+  return (route, state) => {
+    const unauthorizedHandler = inject(ABILITY_UNAUTHORIZED_HANDLER);
+    const applyHandler = (can: boolean): MaybeAsync<GuardResult> =>
+      can ? true : unauthorizedHandler(
+        route as ActivatedRouteSnapshot,
+        state as RouterStateSnapshot,
+      );
+
+    const result = guard(inject(NgAbilityService), route, state);
+
+    if (isObservable(result) || result instanceof Promise) {
+      return intoObservable(result).pipe(
+        switchMap((can) => intoObservable(applyHandler(can))),
+      );
+    }
+    return applyHandler(result);
+  };
 }
 
 /**
@@ -211,10 +277,14 @@ export function canMatchAbility(
   action: string,
   thing?: AbilityThingResolver,
 ): CanMatchFn {
-  return abilityGuard((abilityService, route, state) => {
+  // Does not use abilityGuard/ABILITY_UNAUTHORIZED_HANDLER: returning false from
+  // canMatch signals the router to skip to the next matching route, which is the
+  // intended fallback behavior. Throwing or redirecting here would prevent that.
+  return (route, state) => {
+    const abilityService = inject(NgAbilityService);
     const resolvedThing = thing
       ? thing(route as Route, state as UrlSegment[])
       : matcher;
     return abilityService.can(resolvedThing as never, action as never);
-  });
+  };
 }
