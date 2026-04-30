@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.3.0](https://github.com/topaxi/ng-ability/compare/v2.2.0...v2.3.0) (2026-04-30)
+
+
+### Features
+
+* add ABILITY_UNAUTHORIZED_HANDLER for configurable guard failure behavior ([9d44d33](https://github.com/topaxi/ng-ability/commit/9d44d3353dd606e53ce0db8b7719591e89248baa))
+
 ## [2.2.0](https://github.com/topaxi/ng-ability/compare/v2.1.0...v2.2.0) (2026-02-13)
 
 
