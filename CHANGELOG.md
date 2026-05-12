@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [2.4.0](https://github.com/topaxi/ng-ability/compare/v2.3.0...v2.4.0) (2026-05-12)
+
+
+### Features
+
+* add logger, missing ability handler, and object-based provideAbilities ([a030d54](https://github.com/topaxi/ng-ability/commit/a030d546ae0ca320c32be3a7c119063777715038))
+
 ## [2.3.0](https://github.com/topaxi/ng-ability/compare/v2.2.0...v2.3.0) (2026-04-30)
 
 
