@@ -186,6 +186,27 @@ You can also call `provideAbilities()` without a context class if the context is
 provideAbilities([ArticleAbility, AdminAreaAbility])
 ```
 
+#### Options object
+
+For more control, pass a single options object instead. This lets you configure the logger, missing-ability handler, and unauthorized handler in one place:
+
+```typescript
+import { provideAbilities, warnAbilityMissingHandler } from 'ng-ability'
+
+provideAbilities({
+  context: AbilityUserContext,
+  abilities: [ArticleAbility, AdminAreaAbility],
+
+  // Log ability checks to the console during development
+  logger: console,
+
+  // Warn when no ability is registered for a matcher instead of silently returning false
+  missingHandler: warnAbilityMissingHandler,
+})
+```
+
+All options except `abilities` are optional. See the [API reference](/api/#providabilities-options) for the full list.
+
 ::: tip Feature modules
 You can call `provideAbilities()` in lazy-loaded route providers to add abilities scoped to a feature. See the [Feature Modules](./recipes#feature-modules) recipe for a full example.
 :::

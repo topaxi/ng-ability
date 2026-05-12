@@ -349,6 +349,63 @@ import { ABILITY_UNAUTHORIZED_HANDLER } from 'ng-ability'
 }
 ```
 
+## Missing Ability Handler
+
+When `can()` is called but no registered ability matches the given matcher, ng-ability falls back to returning `false`. By default this is silent. Provide an `ABILITY_MISSING_HANDLER` to be notified — useful for catching configuration mistakes in development.
+
+### Default behavior — silent
+
+Nothing happens; `can()` returns `false` as if the ability denied the action.
+
+### Named handlers
+
+Two ready-made handlers are exported:
+
+| Handler | Behavior |
+|---|---|
+| `warnAbilityMissingHandler` | Logs a `console.warn` with the unmatched matcher and action |
+| `throwAbilityMissingHandler` | Throws `AbilityMissingError` |
+
+### Provide a handler
+
+Via the token directly:
+
+```typescript
+import { ABILITY_MISSING_HANDLER, warnAbilityMissingHandler } from 'ng-ability'
+
+bootstrapApplication(AppComponent, {
+  providers: [
+    { provide: ABILITY_MISSING_HANDLER, useValue: warnAbilityMissingHandler },
+  ],
+})
+```
+
+Or via the `provideAbilities` options object:
+
+```typescript
+import { provideAbilities, warnAbilityMissingHandler } from 'ng-ability'
+
+provideAbilities({
+  abilities: [ArticleAbility],
+  missingHandler: warnAbilityMissingHandler,
+})
+```
+
+### Custom handler
+
+Any function matching `(matcher: unknown, action: string, thing?: unknown) => void` works:
+
+```typescript
+import { ABILITY_MISSING_HANDLER } from 'ng-ability'
+
+{
+  provide: ABILITY_MISSING_HANDLER,
+  useValue: (matcher, action) => {
+    myMonitoring.track('ability.missing', { matcher: String(matcher), action })
+  },
+}
+```
+
 ## Testing
 
 For patterns on testing route guards — including `TestBed.runInInjectionContext`, thing resolver testing, and context transitions — see the [Testing Guide](./testing#testing-route-guards).

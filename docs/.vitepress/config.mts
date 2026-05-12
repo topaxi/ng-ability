@@ -19,7 +19,7 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/', activeMatch: '/guide/' },
       { text: 'API', link: '/api/', activeMatch: '/api/' },
       {
-        text: 'v2.2.0',
+        text: 'v2.3.0',
         items: [
           {
             text: 'Changelog',
