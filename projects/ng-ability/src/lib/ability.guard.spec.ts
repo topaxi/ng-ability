@@ -17,7 +17,7 @@ import {
   redirectAbilityUnauthorizedHandler,
   throwAbilityUnauthorizedHandler,
 } from './ability.guard';
-import { AbilityGuardUnauthorizedError } from './ability.guard.error';
+import { AbilityGuardUnauthorizedError } from './errors';
 import type { Ability } from './interfaces';
 import { ABILITY, ABILITY_CONTEXT, ABILITY_UNAUTHORIZED_HANDLER } from './ng-ability.tokens';
 

@@ -17,9 +17,25 @@ export {
   redirectAbilityUnauthorizedHandler,
   type AbilityThingResolver,
 } from './lib/ability.guard';
-export { NgAbilityError, AbilityGuardUnauthorizedError } from './lib/ability.guard.error';
-export { NgAbilityModule, provideAbilities } from './lib/ng-ability.module';
+export {
+  NgAbilityError,
+  AbilityGuardUnauthorizedError,
+  AbilityMissingError,
+} from './lib/errors';
+export {
+  NgAbilityModule,
+  provideAbilities,
+  type ProvideAbilitiesOptions,
+} from './lib/ng-ability.module';
 export {
   ABILITY_UNAUTHORIZED_HANDLER,
   type AbilityGuardUnauthorizedHandler,
+  ABILITY_MISSING_HANDLER,
+  type AbilityMissingHandler,
+  ABILITY_LOGGER,
+  type AbilityLogger,
 } from './lib/ng-ability.tokens';
+export {
+  throwAbilityMissingHandler,
+  warnAbilityMissingHandler,
+} from './lib/ng-ability.service';

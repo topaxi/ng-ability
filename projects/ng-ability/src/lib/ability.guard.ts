@@ -24,7 +24,7 @@ import {
   ABILITY_UNAUTHORIZED_HANDLER,
   type AbilityGuardUnauthorizedHandler,
 } from './ng-ability.tokens';
-import { AbilityGuardUnauthorizedError } from './ability.guard.error';
+import { AbilityGuardUnauthorizedError } from './errors';
 
 /**
  * The default unauthorized handler. Throws an {@link AbilityGuardUnauthorizedError},

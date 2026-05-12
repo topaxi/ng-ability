@@ -6,7 +6,7 @@ import type {
   RouterStateSnapshot,
 } from '@angular/router';
 import { type Ability, type AbilityContext } from './interfaces';
-import { AbilityGuardUnauthorizedError } from './ability.guard.error';
+import { AbilityGuardUnauthorizedError } from './errors';
 
 const nullContext: AbilityContext<null> = { abilityContext: signal(null) };
 
@@ -32,3 +32,31 @@ export const ABILITY_UNAUTHORIZED_HANDLER =
       },
     },
   );
+
+export interface AbilityLogger {
+  debug(message: string, ...args: unknown[]): void;
+  warn(message: string, ...args: unknown[]): void;
+  error(message: string, ...args: unknown[]): void;
+}
+
+const noopLogger: AbilityLogger = {
+  debug: () => {},
+  warn: () => {},
+  error: () => {},
+};
+
+export const ABILITY_LOGGER = new InjectionToken<AbilityLogger>(
+  'AbilityLogger',
+  { factory: () => noopLogger },
+);
+
+export type AbilityMissingHandler = (
+  matcher: unknown,
+  action: string,
+  thing?: unknown,
+) => void;
+
+export const ABILITY_MISSING_HANDLER = new InjectionToken<AbilityMissingHandler>(
+  'AbilityMissingHandler',
+  { factory: () => () => {} },
+);
